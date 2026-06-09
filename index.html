@@ -463,27 +463,28 @@
   };
 
   function startApp() {
-    DRAFT_KEY = 'ts24_draft_' + token;
-    loadDraft(); initDraftListeners();
-    document.querySelector('.container').style.display = 'block';
-    google.script.run
-      .withSuccessHandler(data => {
-        if (data.erfolg) { renderTable(data.abwesenheit, 'status-output'); renderQualisTable(data.qualis, 'qualis-output'); }
-        else { document.querySelector('.container').style.display = 'none'; document.getElementById('token-input').value = ''; zeigeTokenScreen(true); }
-      })
-      .withFailureHandler(err => showToast('❌ Fehler: ' + err, 'var(--error)'))
-      .getInitialData(token);
-    google.script.run
-      .withSuccessHandler(res => {
-        if (res.erfolg) { letzteWocheDaten = res.daten; renderWocheKarten(res.daten); }
-        else document.getElementById('woche-karten-output').innerHTML = '<div class="loading-spinner">❌ ' + res.fehler + '</div>';
-      })
-      .withFailureHandler(() => { document.getElementById('woche-karten-output').innerHTML = '<div class="loading-spinner">❌ Fehler</div>'; })
-      .loadTabData(token);
-    google.script.run
-      .withSuccessHandler(res => { if (res.erfolg) renderBestaetigungen(res.aufgaben, res.bestaetigt); })
-      .ladeBestaetigungen(token);
-  }
+  DRAFT_KEY = 'ts24_draft_' + token;
+  loadDraft(); initDraftListeners();
+  document.querySelector('.container').style.display = 'block';
+  google.script.run
+    .withSuccessHandler(res => {
+      if (!res.erfolg) {
+        document.querySelector('.container').style.display = 'none';
+        document.getElementById('login-email').value = '';
+        document.getElementById('login-passwort').value = '';
+        localStorage.removeItem('ts24_token');
+        zeigeTokenScreen(true);
+        return;
+      }
+      renderTable(res.abwesenheit, 'status-output');
+      renderQualisTable(res.qualis, 'qualis-output');
+      letzteWocheDaten = res.daten;
+      renderWocheKarten(res.daten);
+      renderBestaetigungen(res.aufgaben, res.bestaetigt);
+    })
+    .withFailureHandler(err => showToast('\u274c Fehler: ' + err, 'var(--error)'))
+    .getStartDaten(token);
+}
 
   function ladeOrtskundeOnce() {
     if (ortskundeGeladen) return; ortskundeGeladen = true;
