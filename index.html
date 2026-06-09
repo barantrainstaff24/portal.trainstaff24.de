@@ -149,9 +149,10 @@
 <div id="token-screen">
   <div class="inner">
     <h2>Trainstaff24</h2>
-    <p id="token-msg">Bitte gib deinen persönlichen Zugangscode ein.</p>
-    <input type="text" id="token-input" placeholder="Token eingeben...">
-    <button class="btn" onclick="submitToken()">Anmelden</button>
+    <p id="token-msg">Bitte melde dich an.</p>
+<input type="email" id="login-email" placeholder="E-Mail Adresse..." style="width:100%;box-sizing:border-box;text-align:center;font-size:16px;padding:12px;margin-bottom:12px;background:var(--input);color:white;border:1px solid #3a3a3c;border-radius:8px;outline:none;font-family:inherit;">
+<input type="password" id="login-passwort" placeholder="Zugangscode..." style="width:100%;box-sizing:border-box;text-align:center;font-size:16px;padding:12px;margin-bottom:12px;letter-spacing:2px;background:var(--input);color:white;border:1px solid #3a3a3c;border-radius:8px;outline:none;font-family:inherit;">
+<button class="btn" onclick="submitLogin()">Anmelden</button>
   </div>
 </div>
 <div class="container">
@@ -405,12 +406,14 @@
   }
 
   function resolveToken() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlToken = urlParams.get('token');
-    if (urlToken) return urlToken;
-    const hash = window.location.hash.replace('#', '').trim();
-    return hash || null;
-  }
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlToken = urlParams.get('token');
+  if (urlToken) return urlToken;
+  const saved = localStorage.getItem('ts24_token');
+  if (saved) return saved;
+  const hash = window.location.hash.replace('#', '').trim();
+  return hash || null;
+}
 
   function zeigeTokenScreen(fehler) {
     const msg = document.getElementById('token-msg');
@@ -420,12 +423,32 @@
     setTimeout(() => document.getElementById('token-input').focus(), 100);
   }
 
-  function submitToken() {
-    const val = document.getElementById('token-input').value.trim();
-    if (!val) { showToast('❌ Bitte Token eingeben', 'var(--error)'); return; }
-    document.getElementById('token-screen').classList.remove('show');
-    token = val; startApp();
-  }
+  function submitLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const passwort = document.getElementById('login-passwort').value.trim();
+  if (!email || !passwort) { showToast('❌ Bitte alle Felder ausfüllen', 'var(--error)'); return; }
+  const btn = document.querySelector('#token-screen .btn');
+  btn.disabled = true; btn.innerText = 'Wird geprüft...';
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'login', email, passwort })
+  })
+  .then(r => r.json())
+  .then(res => {
+    btn.disabled = false; btn.innerText = 'Anmelden';
+    if (res.erfolg) {
+      token = res.token;
+      localStorage.setItem('ts24_token', token);
+      document.getElementById('token-screen').classList.remove('show');
+      startApp();
+    } else {
+      const msg = document.getElementById('token-msg');
+      msg.innerText = '❌ ' + res.fehler;
+      msg.style.color = 'var(--error)';
+    }
+  })
+  .catch(() => { btn.disabled = false; btn.innerText = 'Anmelden'; showToast('❌ Netzwerkfehler', 'var(--error)'); });
+}
 
   window.onload = () => {
     document.getElementById('token-input').addEventListener('keydown', e => { if (e.key === 'Enter') submitToken(); });
