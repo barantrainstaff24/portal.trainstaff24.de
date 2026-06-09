@@ -11,8 +11,7 @@
   <title>Trainstaff24 - Portal</title>
   <style>
 :root{--bg:#0b0b0d;--card:#1c1c1e;--accent:#FF9F0A;--accent2:#0A84FF;--text:#ffffff;--text-dim:#a1a1a6;--border:#2c2c2e;--input:#2c2c2e;--error:#FF453A;--success:#32D74B;--warning:#FF9F0A;}
-    html,body{background-color:var(--bg);color:var(--text);margin:0;padding:0;height:100%;width:100%;overflow-x:hidden;font-family:-apple-system,sans-serif;overscroll-behavior:none;}
-    .nav{display:flex;background:#161618;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;overflow-x:auto;scrollbar-width:none;padding:5px 4px;padding-bottom:calc(5px + env(safe-area-inset-bottom, 0px));}
+    html,body{background-color:var(--bg);color:var(--text);margin:0;padding:0;height:100%;width:100%;overflow-x:hidden;font-family:-apple-system,sans-serif;overscroll-behavior:none;padding-top:env(safe-area-inset-top, 0px);}    .nav{display:flex;background:#161618;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;overflow-x:auto;scrollbar-width:none;padding:5px 4px;padding-top:calc(env(safe-area-inset-top, 0px) + 5px);}
     .nav::-webkit-scrollbar{display:none;}
     .nav-item{flex:0 0 auto;padding:10px 13px;text-align:center;font-size:13px;font-weight:600;color:var(--text-dim);cursor:pointer;white-space:nowrap;border-radius:8px;border:1px solid transparent;margin:0 2px;}
     .nav-item.active{color:var(--accent);border:1px solid var(--accent);background:rgba(255,159,10,0.07);}
