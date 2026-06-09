@@ -360,7 +360,7 @@
     } else {
       const body = {action};
       (POST_MAPS[action]||[]).forEach((k,i) => { if (args[i] !== undefined) body[k] = args[i]; });
-      fetch(APPS_SCRIPT_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)})
+	fetch(APPS_SCRIPT_URL, {method:'POST', body:JSON.stringify(body)})
         .then(r => r.json()).then(d => sh && sh(d)).catch(e => fh && fh(e.message || String(e)));
     }
   }
