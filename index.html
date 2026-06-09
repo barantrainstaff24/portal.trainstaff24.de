@@ -2,51 +2,912 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Verbindungstest</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Trainstaff24">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#FF9F0A">
+  <title>Trainstaff24 - Portal</title>
   <style>
-    body { font-family: sans-serif; max-width: 400px; margin: 60px auto; padding: 20px; background: #0b0b0d; color: white; }
-    h2 { color: #0A84FF; }
-    p { color: #a1a1a6; font-size: 14px; }
-    button { background: #0A84FF; color: white; border: none; padding: 14px 24px; border-radius: 10px; font-size: 16px; cursor: pointer; width: 100%; font-weight: 700; }
-    button:disabled { opacity: 0.6; cursor: not-allowed; }
-    #ergebnis { margin-top: 20px; padding: 16px; border-radius: 10px; font-size: 14px; display: none; }
-    .ok     { background: #1a3a1a; color: #32D74B; border: 1px solid #32D74B; }
-    .fehler { background: #3a1a1a; color: #FF453A; border: 1px solid #FF453A; }
+    :root{--bg:#0b0b0d;--card:#1c1c1e;--accent:#FF9F0A;--accent2:#0A84FF;--text:#ffffff;--text-dim:#a1a1a6;--border:#2c2c2e;--input:#2c2c2e;--error:#FF453A;--success:#32D74B;--warning:#FF9F0A;}
+    html,body{background-color:var(--bg);color:var(--text);margin:0;padding:0;height:100%;width:100%;overflow-x:hidden;font-family:-apple-system,sans-serif;overscroll-behavior:none;}
+    .nav{display:flex;background:#161618;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;overflow-x:auto;scrollbar-width:none;padding:5px 4px;}
+    .nav::-webkit-scrollbar{display:none;}
+    .nav-item{flex:0 0 auto;padding:10px 13px;text-align:center;font-size:13px;font-weight:600;color:var(--text-dim);cursor:pointer;white-space:nowrap;border-radius:8px;border:1px solid transparent;margin:0 2px;}
+    .nav-item.active{color:var(--accent);border:1px solid var(--accent);background:rgba(255,159,10,0.07);}
+    .content{padding:12px;box-sizing:border-box;min-height:100vh;}
+    .tab-pane{display:none;}.tab-pane.active{display:block;}
+    .card{background:var(--card);border-radius:12px;margin-bottom:10px;border:1px solid var(--border);overflow:hidden;}
+    .card-header{padding:10px 14px;font-size:13px;font-weight:700;color:var(--accent);background:rgba(255,159,10,0.05);border-bottom:1px solid var(--border);}
+    .field{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);}
+    input,select,textarea{background:var(--input);color:white;border:1px solid #3a3a3c;padding:8px;border-radius:8px;font-size:14px;outline:none;font-family:inherit;}
+    input,select{width:150px;text-align:right;}
+    textarea{width:100%;box-sizing:border-box;text-align:left;resize:none;overflow:hidden;scrollbar-color:#3a3a3c var(--input);}
+    .btn{background:var(--accent);color:#000;width:100%;padding:14px;border:none;border-radius:12px;font-weight:700;cursor:pointer;margin-top:8px;font-size:14px;transition:opacity 0.1s;}
+    .btn:active{opacity:0.75;}.btn:disabled{opacity:0.6;cursor:not-allowed;}
+    .btn-red{background:var(--error);color:white;margin-top:6px;}.btn-gray{background:#3a3a3c;color:white;margin-top:6px;}
+    #draft-banner{display:none;background:rgba(255,159,10,0.12);border:1px solid var(--warning);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:13px;color:var(--warning);font-weight:600;align-items:center;justify-content:space-between;gap:10px;}
+    #draft-banner.show{display:flex;}
+    #draft-banner span{flex:1;}
+    #draft-banner button{background:none;border:1px solid var(--warning);color:var(--warning);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+    #token-screen{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg);z-index:9000;align-items:center;justify-content:center;padding:30px;box-sizing:border-box;}
+    #token-screen.show{display:flex;}
+    #token-screen .inner{width:100%;max-width:340px;text-align:center;}
+    #token-screen h2{color:var(--accent);margin-bottom:8px;}
+    #token-screen p{color:var(--text-dim);font-size:13px;margin-bottom:24px;}
+    #token-input{width:100%;box-sizing:border-box;text-align:center;font-size:16px;padding:12px;margin-bottom:12px;letter-spacing:2px;background:var(--input);color:white;border:1px solid #3a3a3c;border-radius:8px;outline:none;font-family:inherit;}
+    #token-input:focus{border-color:var(--accent);}
+    .loading-spinner{padding:40px;text-align:center;color:var(--text-dim);font-size:14px;}
+    .table-wrapper{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    td{padding:12px 10px;border:1px solid var(--border);}
+    tr td:first-child{background:#242426;color:var(--text);font-weight:700;width:110px;min-width:110px;font-size:13px;position:sticky;left:0;z-index:2;border-right:2px solid var(--border);}
+    .quali-ok{color:var(--success);font-weight:700;}.quali-warn{color:var(--warning);font-weight:700;}.quali-bad{color:var(--error);font-weight:700;}
+    #qualis-output td{padding:8px 10px;}
+    #toast{visibility:hidden;min-width:250px;background:var(--card);color:#fff;text-align:center;border-radius:12px;border:1px solid var(--accent);padding:16px;position:fixed;z-index:9999;left:50%;bottom:30px;transform:translateX(-50%);font-weight:600;}
+    #toast.show{visibility:visible;animation:fadein 0.5s,fadeout 0.5s 2.5s;}
+    @keyframes fadein{from{bottom:0;opacity:0}to{bottom:30px;opacity:1}}
+    @keyframes fadeout{from{bottom:30px;opacity:1}to{bottom:0;opacity:0}}
+    .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:1000;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;}
+    .modal.show{display:flex;}
+    .modal-content{background:var(--card);width:100%;max-width:380px;padding:20px;border-radius:20px;border:1px solid var(--border);box-sizing:border-box;}
+    .modal-content h3{margin-top:0;font-size:18px;color:var(--accent);margin-bottom:16px;text-align:center;}
+    .modal-content label{display:block;text-align:left;font-size:12px;color:var(--text-dim);margin-bottom:4px;margin-top:12px;font-weight:600;}
+    .modal-content label:first-of-type{margin-top:0;}
+    .modal-content input,.modal-content textarea{width:100%;box-sizing:border-box;margin-bottom:0;display:block;}
+    #confirm-summary{text-align:left;margin:16px 0;font-size:13px;background:#242426;padding:12px;border-radius:10px;max-height:300px;overflow-y:auto;}
+    .summary-row{display:flex;justify-content:space-between;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #3a3a3c;}
+    .summary-row:last-child{border-bottom:none;}
+    .summary-label{color:var(--text-dim);font-weight:600;font-size:12px;}
+    .summary-value{color:var(--accent);font-weight:700;font-size:12px;}
+    .section-label-bar{font-size:11px;font-weight:700;color:var(--text-dim);letter-spacing:0.5px;margin-bottom:8px;padding:0 2px;}
+    .schicht-karte{background:var(--card);border-radius:12px;margin-bottom:10px;border:1px solid var(--border);overflow:hidden;}
+    .schicht-karte-header{padding:10px 14px;background:rgba(255,159,10,0.06);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+    .schicht-datum{font-size:14px;font-weight:800;color:var(--accent);}
+    .schicht-zug{font-size:12px;color:var(--text-dim);font-weight:600;}
+    .schicht-body{padding:10px 14px;}
+    .schicht-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.04);}
+    .schicht-row:last-child{border-bottom:none;}
+    .schicht-row-label{color:var(--text-dim);font-size:12px;}
+    .schicht-row-val{font-weight:600;color:var(--text);}
+    .monat-controls{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:16px;margin-bottom:10px;}
+    .monat-select-row{display:flex;gap:10px;margin-bottom:12px;}
+    .monat-select-row select{flex:1;width:auto;text-align:left;}
+    .monat-btn-row{display:flex;gap:8px;}
+    .monat-btn-row .btn{margin-top:0;flex:1;}
+    #monat-status{margin-top:10px;font-size:13px;color:var(--text-dim);min-height:18px;text-align:center;}
+    .mb-header{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:12px 14px;margin-bottom:8px;font-size:13px;font-weight:700;color:var(--accent);}
+    .mb-table-wrapper{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:10px;border-radius:12px;border:1px solid var(--border);}
+    .mb-table{border-collapse:collapse;font-size:11px;width:auto;min-width:100%;}
+    .mb-table th{background:#1a1a1c;color:var(--accent);font-weight:700;padding:12px 10px;border:1px solid var(--border);white-space:nowrap;text-align:center;position:sticky;top:0;z-index:3;}
+    .mb-table th:first-child{position:sticky;left:0;z-index:4;background:#161618;min-width:58px;max-width:58px;width:58px;}
+    .mb-table td{padding:11px 10px;border:1px solid var(--border);text-align:center;white-space:nowrap;}
+    .mb-table td:first-child{position:sticky;left:0;z-index:2;background:#1a1a1c;color:var(--accent);font-weight:700;font-size:10px;min-width:58px;max-width:58px;width:58px;}
+    .mb-table .sum-row td{background:rgba(255,159,10,0.1);font-weight:700;color:var(--accent);}
+    .mb-table .sum-row td:first-child{background:rgba(255,159,10,0.15);}
+    .mb-overview{background:var(--card);border-radius:12px;border:1px solid var(--border);overflow:hidden;margin-bottom:10px;}
+    .mb-overview-row{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border);font-size:14px;}
+    .mb-overview-row:last-child{border-bottom:none;}
+    .mb-overview-label{color:var(--text-dim);font-weight:600;}
+    .mb-overview-val{font-weight:700;}
+    .mb-overview-val.neg{color:var(--error);}
+    .ortskunde-suche-wrapper{background:var(--card);border-radius:12px;margin-bottom:10px;border:1px solid var(--border);padding:10px 14px;}
+    .ortskunde-suche-wrapper input{width:100%;box-sizing:border-box;text-align:left;font-size:14px;}
+    .kat-folder{background:var(--card);border-radius:14px;margin-bottom:10px;border:1px solid var(--border);overflow:hidden;}
+    .kat-folder.cd-cargo{border-color:rgba(255,159,10,0.4);}
+    .kat-header{padding:14px 16px;font-weight:800;font-size:14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;border-bottom:1px solid var(--border);}
+    .kat-folder.cd-cargo .kat-header{background:rgba(255,159,10,0.06);color:var(--accent);}
+    .kat-folder:not(.cd-cargo) .kat-header{background:rgba(255,159,10,0.06);color:var(--accent);}
+    .kat-header::after{content:'\203a';font-size:22px;color:var(--accent);transition:transform 0.2s;line-height:1;}
+    .kat-folder.open .kat-header::after{transform:rotate(90deg);}
+    .kat-body{display:none;padding:8px;}
+    .kat-folder.open .kat-body{display:block;}
+    .kat-body .accordion-item{margin-bottom:6px;}
+    .kat-body .accordion-item:last-child{margin-bottom:0;}
+    .kat-hidden{display:none !important;}
+    .accordion-item{background:var(--card);border-radius:12px;margin-bottom:8px;border:1px solid var(--border);overflow:hidden;}
+    .accordion-header{padding:14px 16px;font-weight:700;font-size:14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;}
+    .accordion-header::after{content:'\203a';font-size:22px;color:var(--accent);transition:transform 0.2s;line-height:1;}
+    .accordion-item.open .accordion-header::after{transform:rotate(90deg);}
+    .accordion-body{display:none;padding:12px 16px 16px 16px;font-size:13px;color:var(--text-dim);line-height:1.8;white-space:pre-wrap;border-top:1px solid var(--border);}
+    .accordion-item.open .accordion-body{display:block;}
+    .accordion-hidden{display:none !important;}
+    .ortskunde-leer{padding:40px;text-align:center;color:var(--text-dim);font-size:14px;}
+    mark.treffer{background:rgba(255,200,0,0.28);color:var(--text);border-radius:2px;padding:0 1px;}
+    .dokumente-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .dok-kachel{background:var(--card);border:1px solid var(--border);border-radius:16px;text-decoration:none;display:flex;flex-direction:column;align-items:stretch;min-height:100px;overflow:hidden;-webkit-tap-highlight-color:transparent;transition:border-color 0.15s,background 0.15s;}
+    .dok-kachel:active{border-color:var(--accent);background:#222226;}
+    .dok-kachel-body{flex:1;display:flex;align-items:center;justify-content:center;padding:18px 12px 12px 12px;}
+    .dok-kachel-titel{font-size:13px;font-weight:700;color:var(--text);text-align:center;line-height:1.4;word-break:break-word;}
+    .dok-kachel-footer{background:rgba(255,159,10,0.08);border-top:1px solid var(--border);padding:8px 10px;display:flex;align-items:center;justify-content:center;gap:5px;}
+    .dok-kachel-footer-text{font-size:11px;font-weight:700;color:var(--accent);letter-spacing:0.5px;text-transform:uppercase;}
+    .dok-kachel-arrow{font-size:13px;color:var(--accent);}
+    .vma-table-wrapper{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px;border:1px solid var(--border);margin-bottom:10px;}
+    .vma-table{border-collapse:collapse;font-size:12px;width:100%;min-width:700px;}
+    .vma-table th{background:rgba(255,159,10,0.12);color:var(--accent);font-weight:700;padding:10px 8px;border:1px solid var(--border);white-space:nowrap;text-align:center;border-bottom:2px solid rgba(255,159,10,0.4);}
+    .vma-table td{padding:9px 8px;border:1px solid var(--border);text-align:center;white-space:nowrap;}
+    .vma-table td:nth-child(1){color:var(--text-dim);}
+    .vma-table .vma-sum-row td{background:rgba(255,159,10,0.12);font-weight:800;color:var(--accent);}
+    .vma-del-btn{background:rgba(255,69,58,0.12);border:1px solid rgba(255,69,58,0.3);color:var(--error);border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;}
+    .vma-tg-28{color:var(--success);font-weight:800;}
+    .vma-tg-14{color:var(--warning);font-weight:800;}
+    .vma-tg-0{color:var(--text-dim);}
+    .vma-toggle-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0 10px 0;border-bottom:1px solid var(--border);margin-top:12px;}
+    .vma-toggle{position:relative;width:44px;height:24px;flex-shrink:0;}
+    .vma-toggle input{opacity:0;width:0;height:0;position:absolute;}
+    .vma-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:var(--border);border-radius:24px;transition:0.2s;}
+    .vma-slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:white;border-radius:50%;transition:0.2s;}
+    .vma-toggle input:checked + .vma-slider{background:var(--accent);}
+    .vma-toggle input:checked + .vma-slider:before{transform:translateX(20px);}
+    .vma-tg-preview{background:rgba(255,159,10,0.08);border:1px solid rgba(255,159,10,0.2);border-radius:10px;padding:12px 16px;margin:14px 0 4px 0;display:flex;justify-content:space-between;align-items:center;}
   </style>
 </head>
+
 <body>
-  <h2>Verbindungstest</h2>
-  <p>Testet ob GitHub Pages mit dem Apps Script Backend kommunizieren kann.</p>
-  <button onclick="testVerbindung()">Verbindung testen</button>
-  <div id="ergebnis"></div>
+<div id="toast">Meldung</div>
+<div id="token-screen">
+  <div class="inner">
+    <h2>Trainstaff24</h2>
+    <p id="token-msg">Bitte gib deinen persönlichen Zugangscode ein.</p>
+    <input type="text" id="token-input" placeholder="Token eingeben...">
+    <button class="btn" onclick="submitToken()">Anmelden</button>
+  </div>
+</div>
+<div class="container">
+<div class="nav">
+  <div class="nav-item active" onclick="switchTab(this,'tab-entry')">Eingabe</div>
+  <div class="nav-item" onclick="switchTab(this,'tab-berichte')">Arbeitszeit</div>
+  <div class="nav-item" onclick="switchTab(this,'tab-reisekosten');ladeVMADaten()">Reisekosten</div>
+  <div class="nav-item" onclick="switchTab(this,'tab-ortskunde');ladeOrtskundeOnce()">Ortskunde</div>
+  <div class="nav-item" onclick="switchTab(this,'tab-qualis');ladeDokumenteOnce();ladeBestaetigungenOnce()">Infos &amp; Docs</div>
+  <div class="nav-item" onclick="switchTab(this,'tab-status')">Abwesenheit</div>
+</div>
+<div class="content">
+  <div id="tab-entry" class="tab-pane active">
+    <div id="draft-banner"><span>&#x1F4DD; Entwurf wiederhergestellt</span><button onclick="clearDraft()">Verwerfen</button></div>
+    <div id="bestaetigungs-banner" style="display:none;background:rgba(255,69,58,0.12);border:1px solid var(--error);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:13px;color:var(--error);font-weight:600;align-items:center;gap:10px;"><span></span><button onclick="switchTabZuQualis()" style="background:none;border:1px solid var(--error);color:var(--error);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">Jetzt bestätigen</button></div>
+    <div class="card"><div class="card-header">Stammdaten</div>
+      <div class="field"><label>Datum *</label><input type="date" id="datum"></div>
+      <div class="field"><label>Zug-Nr</label><input type="text" id="zugNr"></div>
+      <div class="field"><label>Leistung</label>
+        <input type="text" id="relation" list="leistung-optionen" style="font-size:12px;">
+        <datalist id="leistung-optionen"><option value="Ausfall"><option value="Bereitschaft"><option value="Übergang &gt; 24h"></datalist>
+      </div>
+      <div class="field"><label>Lok-Nr</label><input type="text" id="lokNr"></div>
+    </div>
+    <div class="card"><div class="card-header">Reise vorher &amp; Dienstzeit</div>
+      <div class="field"><label>Reise-Art</label><select id="reiseArt"><option value="">-</option><option>Gastfahrt</option><option>Dienstfahrt</option></select></div>
+      <div class="field"><label>Start BF</label><input type="text" id="startBF" style="text-transform:uppercase;"></div>
+      <div class="field"><label>Ziel BF</label><input type="text" id="zielBF" style="text-transform:uppercase;"></div>
+      <div class="field"><label>Reise Beginn</label><input type="time" id="reiseBeginn"></div>
+      <div class="field"><label>Reise Ende</label><input type="time" id="reiseEnde"></div>
+      <div style="border-top:2px solid var(--accent);margin:0;"></div>
+      <div class="field" style="border-top:none"><label>Dienst Beginn</label><input type="time" id="dienstBeginn"></div>
+      <div class="field"><label>Dienst Ende</label><input type="time" id="dienstEnde"></div>
+    </div>
+    <div class="card"><div class="card-header">Reise danach</div>
+      <div class="field"><label>Reise-Art</label><select id="reiseArt2"><option value="">-</option><option>Gastfahrt</option><option>Dienstfahrt</option></select></div>
+      <div class="field"><label>Start BF</label><input type="text" id="startBF2" style="text-transform:uppercase;"></div>
+      <div class="field"><label>Ziel BF</label><input type="text" id="zielBF2" style="text-transform:uppercase;"></div>
+      <div class="field"><label>Reise Beginn</label><input type="time" id="reiseBeginn2"></div>
+      <div class="field"><label>Reise Ende</label><input type="time" id="reiseEnde2"></div>
+    </div>
+    <div class="card" style="margin-top:10px;"><div class="card-header">Notiz</div>
+      <div style="padding:10px 14px;"><textarea id="notizText" rows="3" placeholder="Notizen, Pausen, ..."></textarea></div>
+    </div>
+    <button class="btn" id="saveBtn" onclick="saveSchicht()">Schicht speichern</button>
+  </div>
+  <div id="tab-berichte" class="tab-pane">
+    <div class="section-label-bar">WOCHENBERICHT</div>
+    <div id="woche-karten-output"><div class="loading-spinner">Wird geladen...</div></div>
+    <div class="section-label-bar" style="margin-top:18px;">MONATSBERICHT</div>
+    <div class="monat-controls">
+      <div class="monat-select-row">
+        <select id="monat-select">
+          <option value="1">Januar</option><option value="2">Februar</option>
+          <option value="3">März</option><option value="4">April</option>
+          <option value="5">Mai</option><option value="6">Juni</option>
+          <option value="7">Juli</option><option value="8">August</option>
+          <option value="9">September</option><option value="10">Oktober</option>
+          <option value="11">November</option><option value="12">Dezember</option>
+        </select>
+        <select id="jahr-select"></select>
+      </div>
+      <div class="monat-btn-row">
+        <button class="btn" id="btnMonatView" onclick="zeigeMonatsbericht()">Anzeigen</button>
+        <button class="btn btn-gray" id="btnMonatSend" onclick="sendeMonatsbericht()">&#x1F4E7; Per E-Mail</button>
+      </div>
+      <div id="monat-status"></div>
+    </div>
+    <div id="monatsbericht-output"></div>
+  </div>
+  <div id="tab-status" class="tab-pane">
+    <div class="card"><div class="card-header">Urlaub</div><div class="table-wrapper" id="status-output"></div></div>
+    <button class="btn" onclick="openModal('modal-urlaub')">&#x1F4C5; Urlaubsantrag</button>
+    <button class="btn btn-gray" style="margin-top:16px;background:rgba(255,69,58,0.15);color:var(--error);border:1px solid rgba(255,69,58,0.3);" onclick="openModal('modal-krank')">&#x1F3E5; Krankmeldung</button>
+  </div>
+  <div id="tab-qualis" class="tab-pane">
+    <div class="card"><div class="card-header">Qualifikationen</div><div class="table-wrapper" id="qualis-output"></div></div>
+    <div style="margin:16px 0 10px 0;padding:0 2px;font-size:12px;font-weight:700;color:var(--text-dim);letter-spacing:0.5px;">DOKUMENTE</div>
+    <div id="dokumente-output"><div class="loading-spinner">Wird geladen...</div></div>
+    <div style="margin:16px 0 10px 0;padding:0 2px;font-size:12px;font-weight:700;color:var(--text-dim);letter-spacing:0.5px;">BESTÄTIGUNGEN</div>
+    <div id="bestaetigungen-output"><div class="loading-spinner">Wird geladen...</div></div>
+  </div>
+  <div id="tab-reisekosten" class="tab-pane">
+    <div style="background:var(--card);border-radius:12px;border:1px solid var(--border);padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+      <select id="vma-monat-select" onchange="vmaDropdownGeaendert()" style="flex:1;width:auto;text-align:left;">
+        <option value="1">Januar</option><option value="2">Februar</option>
+        <option value="3">März</option><option value="4">April</option>
+        <option value="5">Mai</option><option value="6">Juni</option>
+        <option value="7">Juli</option><option value="8">August</option>
+        <option value="9">September</option><option value="10">Oktober</option>
+        <option value="11">November</option><option value="12">Dezember</option>
+      </select>
+      <select id="vma-jahr-select" onchange="vmaDropdownGeaendert()" style="width:80px;text-align:left;"></select>
+      <span id="vma-lade-status" style="font-size:12px;color:var(--text-dim);"></span>
+    </div>
+    <div id="vma-output"></div>
+    <button class="btn" onclick="openModal('modal-vma-neu')">+ Eintrag hinzufügen</button>
+    <div id="vma-senden-bereich" style="display:none;">
+      <button class="btn btn-gray" id="btnVMASenden" onclick="vmaMonatsberichtSenden()" style="margin-top:8px;">&#x1F4E7; Monat per E-Mail senden</button>
+      <div id="vma-senden-status" style="margin-top:8px;font-size:13px;text-align:center;min-height:16px;"></div>
+    </div>
+  </div>
+  <div id="tab-ortskunde" class="tab-pane">
+    <div class="ortskunde-suche-wrapper">
+      <input type="text" id="ortskunde-suche" placeholder="&#x1F50D; Suche nach Ort oder Begriff..." oninput="filterOrtskunde(this.value)">
+    </div>
+    <div id="ortskunde-output"><div class="loading-spinner">Wird geladen...</div></div>
+  </div>
+</div>
+</div>
+<!-- Modals -->
+<div id="modal-confirm" class="modal"><div class="modal-content">
+  <h3>Schicht bestätigen</h3>
+  <div id="confirm-summary"></div>
+  <button class="btn" id="confirmBtn" onclick="confirmSave()" style="margin-bottom:8px;">&#x2713; Speichern</button>
+  <button class="btn btn-gray" onclick="closeModal('modal-confirm')">Abbrechen</button>
+</div></div>
+<div id="modal-urlaub" class="modal"><div class="modal-content">
+  <h3>&#x1F4C5; Urlaubsantrag</h3>
+  <label>Von Datum *</label><input type="date" id="urlaub-von">
+  <label>Bis Datum *</label><input type="date" id="urlaub-bis">
+  <label>Nachricht</label><textarea id="urlaub-notiz" rows="3" placeholder="Grund oder weitere Infos..."></textarea>
+  <button class="btn" id="btnUrlaubSend" onclick="sendUrlaubAntrag()">&#x2709;&#xFE0F; Senden</button>
+  <button class="btn btn-gray" onclick="closeModal('modal-urlaub')">Abbrechen</button>
+</div></div>
+<div id="modal-krank" class="modal"><div class="modal-content">
+  <h3>&#x1F3E5; Krankmeldung</h3>
+  <label>Krank von *</label><input type="date" id="krank-von">
+  <label>Voraussichtlich bis *</label><input type="date" id="krank-bis">
+  <label>Nachricht</label><textarea id="krank-notiz" rows="3" placeholder="Zusätzliche Infos..."></textarea>
+  <button class="btn btn-red" id="btnKrankSend" onclick="sendKrankMeldung()">&#x2709;&#xFE0F; Abschicken</button>
+  <button class="btn btn-gray" onclick="closeModal('modal-krank')">Abbrechen</button>
+</div></div>
+<div id="modal-monat-confirm" class="modal"><div class="modal-content">
+  <h3>&#x1F4E7; Monatsbericht senden</h3>
+  <p id="monat-confirm-text" style="text-align:center;font-size:13px;color:var(--text-dim);margin:0 0 16px 0;"></p>
+  <button class="btn" onclick="sendeMonatsberichtBestaetigt()">&#x2713; Ja, senden</button>
+  <button class="btn btn-gray" onclick="closeModal('modal-monat-confirm')">Abbrechen</button>
+</div></div>
+<div id="modal-schicht-loeschen" class="modal"><div class="modal-content">
+  <h3>Schicht löschen</h3>
+  <p id="schicht-loeschen-text" style="text-align:center;font-size:13px;color:var(--text-dim);margin:0 0 16px 0;"></p>
+  <button class="btn btn-red" id="btnSchichtLoeschenOk" onclick="loescheSchichtAusfuehren()">Ja, löschen</button>
+  <button class="btn btn-gray" onclick="closeModal('modal-schicht-loeschen')">Abbrechen</button>
+</div></div>
+<div id="modal-vma-neu" class="modal"><div class="modal-content" style="max-height:92vh;overflow-y:auto;">
+  <h3>&#x1F4B6; Reisekosten-Eintrag</h3>
+  <div style="background:rgba(255,159,10,0.06);border:1px solid rgba(255,159,10,0.2);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--text-dim);margin-bottom:14px;line-height:1.7;">
+    <strong style="color:var(--accent);">§9 Abs. 4a EStG</strong><br>
+    <b style="color:var(--text);">Ohne Übernachtung:</b> &gt; 8h = 14 € · Mondscheinklausel: dominanter Tag zählt<br>
+    <b style="color:var(--text);">Mit Übernachtung:</b> Anreisetag 14 € · Volltage 28 € · Abreisetag 14 €
+  </div>
+  <div style="display:grid;grid-template-columns:calc(50% - 4px) calc(50% - 4px);gap:8px;margin-bottom:8px;">
+    <div><label style="display:block;font-size:11px;color:var(--text-dim);font-weight:600;margin-bottom:4px;">Von Datum *</label><input type="date" id="vma-von-datum" style="width:100%;box-sizing:border-box;text-align:left;" onchange="updateVMATagegeld()"></div>
+    <div><label style="display:block;font-size:11px;color:var(--text-dim);font-weight:600;margin-bottom:4px;">Von Zeit</label><input type="time" id="vma-von-zeit" style="width:100%;box-sizing:border-box;text-align:left;" onchange="updateVMATagegeld()"></div>
+    <div><label style="display:block;font-size:11px;color:var(--text-dim);font-weight:600;margin-bottom:4px;">Bis Datum *</label><input type="date" id="vma-bis-datum" style="width:100%;box-sizing:border-box;text-align:left;" onchange="updateVMATagegeld()"></div>
+    <div><label style="display:block;font-size:11px;color:var(--text-dim);font-weight:600;margin-bottom:4px;">Bis Zeit</label><input type="time" id="vma-bis-zeit" style="width:100%;box-sizing:border-box;text-align:left;" onchange="updateVMATagegeld()"></div>
+  </div>
+  <div class="vma-toggle-row" style="margin-top:4px;">
+    <div><div style="font-size:13px;font-weight:600;">Übernachtung</div><div style="font-size:11px;color:var(--text-dim);">Außer Haus übernachtet?</div></div>
+    <label class="vma-toggle"><input type="checkbox" id="vma-uebernachtung" onchange="updateVMATagegeld()"><span class="vma-slider"></span></label>
+  </div>
+  <div style="display:grid;grid-template-columns:calc(50% - 4px) calc(50% - 4px);gap:8px;margin-top:8px;">
+    <div><label style="display:block;font-size:11px;color:var(--text-dim);font-weight:600;margin-bottom:4px;">Land</label><input type="text" id="vma-land" style="width:100%;box-sizing:border-box;text-align:left;" value="Deutschland"></div>
+    <div><label style="display:block;font-size:11px;color:var(--text-dim);font-weight:600;margin-bottom:4px;">Verkehrsmittel</label><select id="vma-verkehr" style="width:100%;box-sizing:border-box;text-align:left;"><option>Bahn</option><option>PKW</option><option>Flugzeug</option><option>Bus</option><option>Sonstiges</option></select></div>
+  </div>
+  <div style="margin-top:8px;"><label style="display:block;font-size:11px;color:var(--text-dim);font-weight:600;margin-bottom:4px;">Kunde</label><input type="text" id="vma-kunde" style="width:100%;box-sizing:border-box;text-align:left;" value="CD Cargo"></div>
+  <div class="vma-tg-preview" style="margin-top:12px;">
+    <div><div style="font-size:11px;font-weight:700;color:var(--text-dim);letter-spacing:0.5px;">BERECHNETES TAGEGELD</div><div id="vma-tg-breakdown" style="font-size:10px;color:var(--text-dim);margin-top:2px;"></div></div>
+    <span id="vma-tagegeld-val" style="font-size:24px;font-weight:800;color:var(--accent);">—</span>
+  </div>
+  <button class="btn" id="btnVMASave" onclick="vmaEintragSpeichern()" style="margin-top:12px;">💾 Speichern</button>
+  <button class="btn btn-gray" onclick="closeModal('modal-vma-neu')">Abbrechen</button>
+</div></div>
+<div id="modal-vma-loeschen" class="modal"><div class="modal-content">
+  <h3>Eintrag löschen</h3>
+  <p style="text-align:center;font-size:13px;color:var(--text-dim);margin:0 0 16px 0;">Diesen Eintrag unwiderruflich löschen?</p>
+  <button class="btn btn-red" id="btnVMALoeschenOk" onclick="vmaLoeschenAusfuehren()">Ja, löschen</button>
+  <button class="btn btn-gray" onclick="closeModal('modal-vma-loeschen')">Abbrechen</button>
+</div></div>
+<script>
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx5B00BzYQJhyp0XTwtlh5p0_fx8-jLvyfZcbddfGE10bbLROX_LkEHlTra8DvVTfbn/exec';
 
-  <script>
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx5B00BzYQJhyp0XTwtlh5p0_fx8-jLvyfZcbddfGE10bbLROX_LkEHlTra8DvVTfbn/exec';
-
-    async function testVerbindung() {
-      const btn = document.querySelector('button');
-      const out = document.getElementById('ergebnis');
-      btn.innerText = 'Wird getestet...';
-      btn.disabled = true;
-      out.style.display = 'none';
-      try {
-        const res = await fetch(APPS_SCRIPT_URL + '?action=ping');
-        const data = await res.json();
-        if (data.erfolg) {
-          out.className = 'ok';
-          out.innerText = '✅ ' + data.nachricht;
-        } else {
-          out.className = 'fehler';
-          out.innerText = '❌ Antwort erhalten aber Fehler: ' + JSON.stringify(data);
-        }
-      } catch(err) {
-        out.className = 'fehler';
-        out.innerText = '❌ Verbindung fehlgeschlagen: ' + err.message;
-      }
-      out.style.display = 'block';
-      btn.innerText = 'Nochmal testen';
-      btn.disabled = false;
+  // google.script.run Kompatibilitäts-Shim für externes Hosting
+  function _gasCall(action, args, sh, fh) {
+    const GET_MAPS = {
+      getInitialData: ['token'], loadTabData: ['token'],
+      loadOrtskunde: ['token'], loadLaStrecken: ['token'], loadDokumente: ['token'],
+      ladeMonatsberichtDaten: ['monat','jahr','token'],
+      ladeVMAEintraege: ['monat','jahr','token'],
+      ladeBestaetigungen: ['token'],
+    };
+    const POST_MAPS = {
+      schichtSpeichern: ['daten','token'], loescheSchicht: ['schichtCol','token'],
+      sendUrlaubAntrag: ['daten','token'], sendKrankMeldung: ['daten','token'],
+      speichereNotiz: ['daten','token'], sendeMonatsbericht: ['monat','jahr','token'],
+      speichereVMAEintrag: ['daten','token'], loescheVMAEintrag: ['zeilenIndex','token'],
+      sendeVMAMonatsbericht: ['monat','jahr','token'],
+      bestaetigeAufgabe: ['token','aufgabeId'],
+    };
+    if (GET_MAPS[action]) {
+      const p = {action};
+      (GET_MAPS[action]||[]).forEach((k,i) => { if (args[i] !== undefined) p[k] = args[i]; });
+      fetch(APPS_SCRIPT_URL + '?' + new URLSearchParams(p))
+        .then(r => r.json()).then(d => sh && sh(d)).catch(e => fh && fh(e.message || String(e)));
+    } else {
+      const body = {action};
+      (POST_MAPS[action]||[]).forEach((k,i) => { if (args[i] !== undefined) body[k] = args[i]; });
+      fetch(APPS_SCRIPT_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)})
+        .then(r => r.json()).then(d => sh && sh(d)).catch(e => fh && fh(e.message || String(e)));
     }
-  </script>
+  }
+  const google = { script: { run: new Proxy({}, {
+    get(_, action) {
+      if (action === 'withSuccessHandler' || action === 'withFailureHandler') {
+        let sh = null, fh = null;
+        const chain = new Proxy({
+          withSuccessHandler(fn) { sh = fn; return chain; },
+          withFailureHandler(fn) { fh = fn; return chain; }
+        }, { get(t,p) { if (p in t) return t[p]; return (...a) => _gasCall(p, a, sh, fh); } });
+        return (fn) => { if (action==='withSuccessHandler') sh=fn; else fh=fn; return chain; };
+      }
+      return (...args) => _gasCall(action, args, null, null);
+    }
+  }) } };
+  let token = '';
+  let lastSchichtData = null, DRAFT_KEY = '', letzteWocheDaten = null;
+  let letzterMbMonat = 0, letzterMbJahr = 0, zuLoeschendeSchichtCol = 0;
+  let ortskundeGeladen = false, laStreckenGeladen = false, dokumenteGeladen = false, bestaetigungenGeladen = false;
+  let zuLoeschenderVMAIndex = 0, aktuellVMAMonat = 0, aktuellVMAJahr = 0;
+  const FIELD_IDS = ['datum','zugNr','relation','lokNr','reiseArt','startBF','zielBF','reiseBeginn','reiseEnde','dienstBeginn','dienstEnde','reiseArt2','startBF2','zielBF2','reiseBeginn2','reiseEnde2'];
+  const MONAT_NAMEN = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+
+  function kurzDatum(str) {
+    if (!str) return '';
+    const t = str.split('.');
+    if (t.length < 3) return str;
+    return t[0] + '.' + t[1] + '.' + t[2].slice(-2);
+  }
+
+  function initMonatJahr() {
+    const heute = new Date(), aktJahr = heute.getFullYear(), aktMonat = heute.getMonth() + 1;
+    const letzterMonat = aktMonat === 1 ? 12 : aktMonat - 1;
+    const letzterJahr  = aktMonat === 1 ? aktJahr - 1 : aktJahr;
+    const js = document.getElementById('jahr-select');
+    for (let j = aktJahr - 1; j <= aktJahr; j++) {
+      const o = document.createElement('option'); o.value = j; o.innerText = j;
+      if (j === letzterJahr) o.selected = true; js.appendChild(o);
+    }
+    document.getElementById('monat-select').value = letzterMonat;
+  }
+
+  function resolveToken() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlToken = urlParams.get('token');
+    if (urlToken) return urlToken;
+    const hash = window.location.hash.replace('#', '').trim();
+    return hash || null;
+  }
+
+  function zeigeTokenScreen(fehler) {
+    const msg = document.getElementById('token-msg');
+    if (fehler) { msg.innerText = '❌ Token ungültig.'; msg.style.color = 'var(--error)'; }
+    else { msg.innerText = 'Bitte gib deinen persönlichen Zugangscode ein.'; msg.style.color = ''; }
+    document.getElementById('token-screen').classList.add('show');
+    setTimeout(() => document.getElementById('token-input').focus(), 100);
+  }
+
+  function submitToken() {
+    const val = document.getElementById('token-input').value.trim();
+    if (!val) { showToast('❌ Bitte Token eingeben', 'var(--error)'); return; }
+    document.getElementById('token-screen').classList.remove('show');
+    token = val; startApp();
+  }
+
+  window.onload = () => {
+    document.getElementById('token-input').addEventListener('keydown', e => { if (e.key === 'Enter') submitToken(); });
+    initMonatJahr();
+    token = resolveToken();
+    if (!token) { zeigeTokenScreen(false); return; }
+    startApp();
+  };
+
+  function startApp() {
+    DRAFT_KEY = 'ts24_draft_' + token;
+    loadDraft(); initDraftListeners();
+    document.querySelector('.container').style.display = 'block';
+    google.script.run
+      .withSuccessHandler(data => {
+        if (data.erfolg) { renderTable(data.abwesenheit, 'status-output'); renderQualisTable(data.qualis, 'qualis-output'); }
+        else { document.querySelector('.container').style.display = 'none'; document.getElementById('token-input').value = ''; zeigeTokenScreen(true); }
+      })
+      .withFailureHandler(err => showToast('❌ Fehler: ' + err, 'var(--error)'))
+      .getInitialData(token);
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res.erfolg) { letzteWocheDaten = res.daten; renderWocheKarten(res.daten); }
+        else document.getElementById('woche-karten-output').innerHTML = '<div class="loading-spinner">❌ ' + res.fehler + '</div>';
+      })
+      .withFailureHandler(() => { document.getElementById('woche-karten-output').innerHTML = '<div class="loading-spinner">❌ Fehler</div>'; })
+      .loadTabData(token);
+    google.script.run
+      .withSuccessHandler(res => { if (res.erfolg) renderBestaetigungen(res.aufgaben, res.bestaetigt); })
+      .ladeBestaetigungen(token);
+  }
+
+  function ladeOrtskundeOnce() {
+    if (ortskundeGeladen) return; ortskundeGeladen = true;
+    google.script.run
+      .withSuccessHandler(res => { if (res.erfolg) renderOrtskunde(res.eintraege); else document.getElementById('ortskunde-output').innerHTML = '<div class="loading-spinner">❌ ' + res.fehler + '</div>'; })
+      .withFailureHandler(() => { document.getElementById('ortskunde-output').innerHTML = '<div class="loading-spinner">❌ Fehler</div>'; })
+      .loadOrtskunde(token);
+  }
+  function ladeDokumenteOnce() {
+    if (dokumenteGeladen) return; dokumenteGeladen = true;
+    google.script.run
+      .withSuccessHandler(res => { if (res.erfolg) renderDokumente(res.dokumente); else document.getElementById('dokumente-output').innerHTML = '<div class="ortskunde-leer">❌ ' + res.fehler + '</div>'; })
+      .withFailureHandler(() => { document.getElementById('dokumente-output').innerHTML = '<div class="ortskunde-leer">❌ Fehler</div>'; })
+      .loadDokumente(token);
+  }
+  function ladeBestaetigungenOnce() {
+    if (bestaetigungenGeladen) return; bestaetigungenGeladen = true;
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res.erfolg) renderBestaetigungen(res.aufgaben, res.bestaetigt);
+        else document.getElementById('bestaetigungen-output').innerHTML = '<div class="ortskunde-leer">❌ ' + res.fehler + '</div>';
+      })
+      .withFailureHandler(() => { document.getElementById('bestaetigungen-output').innerHTML = '<div class="ortskunde-leer">❌ Fehler</div>'; })
+      .ladeBestaetigungen(token);
+  }
+  function switchTab(el, id) {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    el.classList.add('active'); document.getElementById(id).classList.add('active');
+  }
+  function renderBestaetigungen(aufgaben, bestaetigt) {
+    const out = document.getElementById('bestaetigungen-output');
+    const offen = aufgaben ? aufgaben.filter(a => !bestaetigt.includes(a.id)).length : 0;
+    const banner = document.getElementById('bestaetigungs-banner');
+    if (banner) {
+      if (offen > 0) { banner.style.display = 'flex'; banner.querySelector('span').innerText = '⚠️ ' + offen + ' ausstehende Bestätigung' + (offen > 1 ? 'en' : '') + ' — bitte unter Infos & Docs bestätigen'; }
+      else { banner.style.display = 'none'; }
+    }
+    if (!aufgaben || aufgaben.length === 0) { out.innerHTML = '<div class="ortskunde-leer">Keine ausstehenden Bestätigungen.</div>'; return; }
+    out.innerHTML = aufgaben.map(a => {
+      const done = bestaetigt.includes(a.id);
+      return '<div style="background:var(--card);border-radius:12px;margin-bottom:10px;border:1px solid ' + (done ? 'rgba(50,215,75,0.3)' : 'var(--border)') + ';overflow:hidden;">'
+        + '<div style="padding:12px 16px;background:rgba(255,159,10,0.05);border-bottom:1px solid var(--border);"><div style="font-size:13px;font-weight:800;color:' + (done ? 'var(--success)' : 'var(--accent)') + ';">' + a.titel + '</div><div style="font-size:10px;color:var(--text-dim);margin-top:2px;">Erstellt: ' + a.erstellt + '</div></div>'
+        + (a.inhalt ? '<div style="padding:12px 16px;font-size:12px;color:var(--text-dim);line-height:1.7;white-space:pre-wrap;">' + a.inhalt + '</div>' : '')
+        + '<div style="padding:10px 16px;border-top:1px solid var(--border);">'
+        + (done ? '<div style="font-size:12px;font-weight:700;color:var(--success);">✓ Von dir bestätigt</div>'
+          : '<button onclick="bestaetigungPopup(\'' + a.id + '\',\'' + encodeURIComponent(a.titel) + '\')" style="background:var(--accent);color:#000;border:none;border-radius:8px;padding:10px 16px;font-size:12px;font-weight:700;cursor:pointer;width:100%;">Zur Kenntnis nehmen & bestätigen</button>')
+        + '</div></div>';
+    }).join('');
+  }
+  function bestaetigungPopup(aufgabeId, titelEncoded) {
+    const titel = decodeURIComponent(titelEncoded);
+    if (confirm('Hiermit bestätige ich, dass ich folgende Unterweisung zur Kenntnis genommen habe:\n\n"' + titel + '"\n\nMit "OK" bestätige ich dies verbindlich.')) {
+      bestaetigen(aufgabeId, null);
+    }
+  }
+  function bestaetigen(aufgabeId, btn) {
+    if (btn) { btn.disabled = true; btn.innerText = '...'; }
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res.erfolg) { showToast('✅ Bestätigt!', 'var(--success)'); bestaetigungenGeladen = false; ladeBestaetigungenOnce(); }
+        else { showToast('❌ ' + res.fehler, 'var(--error)'); if (btn) { btn.disabled = false; btn.innerText = 'Zur Kenntnis nehmen & bestätigen'; } }
+      })
+      .withFailureHandler(() => { showToast('❌ Fehler', 'var(--error)'); if (btn) { btn.disabled = false; btn.innerText = 'Zur Kenntnis nehmen & bestätigen'; } })
+      .bestaetigeAufgabe(token, aufgabeId);
+  }
+  function renderWocheKarten(daten) {
+    const out = document.getElementById('woche-karten-output');
+    if (!daten || daten.length === 0) { out.innerHTML = '<div class="ortskunde-leer">Keine Daten.</div>'; return; }
+    const labelMap = {};
+    daten.forEach((row, i) => { if (row[0]) labelMap[row[0].toString().trim()] = i; });
+    const datumIdx = labelMap['Datum'];
+    if (datumIdx === undefined) { out.innerHTML = '<div class="ortskunde-leer">Format nicht erkannt.</div>'; return; }
+    const get = (label, col) => { const ri = labelMap[label]; return ri !== undefined ? (daten[ri][col] || '') : ''; };
+    const findRow = (substr) => { const lower = substr.toLowerCase(); const key = Object.keys(labelMap).find(k => k.toLowerCase().includes(lower)); return key !== undefined ? labelMap[key] : undefined; };
+    const getRaw = (substr, col) => { const ri = findRow(substr); if (ri === undefined) return ''; return (daten[ri][col] || '').toString().trim(); };
+    const toNum = (s) => { if (!s) return 0; if (/^\d+:\d{2}/.test(s)) { const p = s.split(':'); return parseInt(p[0]) + parseInt(p[1]) / 60; } return parseFloat(s.replace(',', '.')) || 0; };
+    const fmtDez = v => v.toFixed(2).replace('.', ',');
+    const karten = [];
+    for (let col = 1; col <= 10; col++) {
+      const datum = daten[datumIdx][col]; if (!datum) continue;
+      karten.push({ col, datum, zugNr: get('ZugNr', col), leistung: get('Leistung', col), lokNr: get('Lok-Nr', col),
+        dienstBeginn: get('Dienstbeginn', col), dienstEnde: get('Dienstende', col),
+        reiseArt: get('Reise-Art', col), startBF: get('Start BF', col), zielBF: get('Ziel BF', col),
+        reiseBeginn: get('Reise Beginn', col), reiseEnde: get('Reise Ende', col),
+        reiseArt2: get('Reise-Art2', col), startBF2: get('Start BF2', col), zielBF2: get('Ziel BF2', col),
+        reiseBeginn2: get('Reise Beginn2', col), reiseEnde2: get('Reise Ende2', col),
+        azStd: getRaw('inkl', col), sumGF: getRaw('summe gf', col), sumDF: getRaw('summe df', col)
+      });
+    }
+    if (karten.length === 0) { out.innerHTML = '<div class="ortskunde-leer">Noch keine Schichten eingetragen.</div>'; return; }
+    let sumAZ = 0, sumGF = 0, sumDF = 0;
+    karten.forEach(k => { sumAZ += toNum(k.azStd); sumGF += toNum(k.sumGF); sumDF += toNum(k.sumDF); });
+    let html = '<div style="background:var(--card);border-radius:12px;border:1px solid rgba(255,159,10,0.3);margin-bottom:12px;overflow:hidden;">'
+      + '<div style="padding:10px 14px;background:rgba(255,159,10,0.08);border-bottom:1px solid var(--border);font-size:12px;font-weight:800;color:var(--accent);">WOCHE GESAMT</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;">'
+      + '<div style="padding:12px 10px;text-align:center;border-right:1px solid var(--border);"><div style="font-size:10px;color:var(--text-dim);font-weight:600;margin-bottom:4px;">Arbeitszeit</div><div style="font-size:16px;font-weight:800;color:var(--success);">' + fmtDez(sumAZ) + '</div></div>'
+      + '<div style="padding:12px 10px;text-align:center;border-right:1px solid var(--border);"><div style="font-size:10px;color:var(--text-dim);font-weight:600;margin-bottom:4px;">Gastfahrt</div><div style="font-size:16px;font-weight:800;color:var(--success);">' + fmtDez(sumGF) + '</div></div>'
+      + '<div style="padding:12px 10px;text-align:center;"><div style="font-size:10px;color:var(--text-dim);font-weight:600;margin-bottom:4px;">Dienstfahrt</div><div style="font-size:16px;font-weight:800;color:var(--success);">' + fmtDez(sumDF) + '</div></div>'
+      + '</div></div>';
+    html += karten.map(k => {
+      const rows = [];
+      if (k.leistung) rows.push(['Leistung', k.leistung]);
+      if (k.lokNr) rows.push(['Lok-Nr', k.lokNr]);
+      if (k.dienstBeginn || k.dienstEnde) rows.push(['Dienst', (k.dienstBeginn || '?') + ' → ' + (k.dienstEnde || '?') + (k.azStd ? ' (' + k.azStd + ' Std)' : '')]);
+      if (k.reiseArt && k.startBF && k.zielBF) rows.push([k.reiseArt, k.startBF + ' → ' + k.zielBF + (k.reiseBeginn ? '  ' + k.reiseBeginn : '') + (k.reiseEnde ? ' – ' + k.reiseEnde : '') + (k.sumGF && k.reiseArt === 'Gastfahrt' ? ' (' + k.sumGF + ' Std)' : '') + (k.sumDF && k.reiseArt === 'Dienstfahrt' ? ' (' + k.sumDF + ' Std)' : '')]);
+      if (k.reiseArt2 && k.startBF2 && k.zielBF2) rows.push([k.reiseArt2, k.startBF2 + ' → ' + k.zielBF2 + (k.reiseBeginn2 ? '  ' + k.reiseBeginn2 : '') + (k.reiseEnde2 ? ' – ' + k.reiseEnde2 : '') + (k.sumGF && k.reiseArt2 === 'Gastfahrt' ? ' (' + k.sumGF + ' Std)' : '') + (k.sumDF && k.reiseArt2 === 'Dienstfahrt' ? ' (' + k.sumDF + ' Std)' : '')]);
+      return '<div class="schicht-karte"><div class="schicht-karte-header"><span class="schicht-datum">' + k.datum + '</span>' + (k.zugNr ? '<span class="schicht-zug">Zug ' + k.zugNr + '</span>' : '') + '</div><div class="schicht-body">' + rows.map(r => '<div class="schicht-row"><span class="schicht-row-label">' + r[0] + '</span><span class="schicht-row-val">' + r[1] + '</span></div>').join('') + '</div></div>';
+    }).join('');
+    const letzteCol = karten[karten.length - 1].col;
+    const letzteDatum = karten[karten.length - 1].datum;
+    html += '<button onclick="loescheSchichtBestaetigen(' + letzteCol + ', \'' + letzteDatum + '\')" style="background:rgba(255,69,58,0.12);border:1px solid rgba(255,69,58,0.35);color:var(--error);width:100%;padding:12px;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;margin-top:4px;">Letzte Schicht löschen (' + letzteDatum + ')</button>';
+    out.innerHTML = html;
+  }
+  function renderMonatsbericht(res) {
+    const out = document.getElementById('monatsbericht-output');
+    const s = res.summen;
+    const sumVals = { 'Datum':'Summe','ZugNr':'','Leistung':'','Start BF':'','Ziel BF':'','Reise Beginn':'','Reise Ende':'','Dienstbeginn':'','Dienstende':'','Start BF2':'','Ziel BF2':'','Reise Beginn2':'','Reise Ende2':'','realAZ':s.realAZ,'AZ inkl MinStd':s.azMinStd,'Summe GF':s.sumGF,'Summe DF':s.sumDF,'Nacht 25%':s.nacht25,'Kernnacht 40%':s.kern40,'S-Zuschl.':s.sZuschl,'F-Zuschl.':s.fZuschl };
+    let html = '<div class="mb-header">' + res.mitarbeiter + ' · ' + res.monat + ' ' + res.jahr + '</div>';
+    html += '<div class="mb-table-wrapper"><table class="mb-table"><thead><tr>';
+    res.spalten.forEach(sp => { html += '<th>' + sp + '</th>'; });
+    html += '</tr></thead><tbody>';
+    res.zeilen.forEach(row => { html += '<tr>' + row.map(c => '<td>' + (c || '') + '</td>').join('') + '</tr>'; });
+    html += '<tr class="sum-row">' + res.spalten.map(sp => '<td>' + (sumVals[sp] || '') + '</td>').join('') + '</tr>';
+    html += '</tbody></table></div>';
+    const st = res.stunden, mehrNeg = parseFloat(st.mehrarbeit.replace(',', '.')) < 0;
+    html += '<div class="mb-overview"><div class="mb-overview-row"><span class="mb-overview-label">Soll-Stunden</span><span class="mb-overview-val">' + st.soll + '</span></div><div class="mb-overview-row"><span class="mb-overview-label">Ist-Stunden</span><span class="mb-overview-val">' + st.ist + '</span></div><div class="mb-overview-row"><span class="mb-overview-label">Mehrarbeit</span><span class="mb-overview-val' + (mehrNeg ? ' neg' : '') + '">' + st.mehrarbeit + '</span></div><div class="mb-overview-row"><span class="mb-overview-label">Mehrarbeitszuschlag</span><span class="mb-overview-val">' + st.mzuschlag + '</span></div></div>';
+    out.innerHTML = html;
+    setTimeout(() => out.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+  }
+  function zeigeMonatsbericht() {
+    const monat = parseInt(document.getElementById('monat-select').value);
+    const jahr  = parseInt(document.getElementById('jahr-select').value);
+    const btn   = document.getElementById('btnMonatView');
+    btn.disabled = true; btn.innerText = 'Wird geladen...';
+    document.getElementById('monat-status').innerText = '';
+    document.getElementById('monatsbericht-output').innerHTML = '';
+    google.script.run
+      .withSuccessHandler(res => {
+        btn.disabled = false; btn.innerText = 'Anzeigen';
+        if (!res.erfolg) { document.getElementById('monat-status').innerText = '❌ ' + res.fehler; document.getElementById('monat-status').style.color = 'var(--error)'; return; }
+        renderMonatsbericht(res);
+      })
+      .withFailureHandler(err => { btn.disabled = false; btn.innerText = 'Anzeigen'; document.getElementById('monat-status').innerText = '❌ Fehler: ' + err; })
+      .ladeMonatsberichtDaten(monat, jahr, token);
+  }
+  function sendeMonatsbericht() {
+    letzterMbMonat = parseInt(document.getElementById('monat-select').value);
+    letzterMbJahr  = parseInt(document.getElementById('jahr-select').value);
+    document.getElementById('monat-confirm-text').innerText = 'Monatsbericht ' + MONAT_NAMEN[letzterMbMonat - 1] + ' ' + letzterMbJahr + ' wird als PDF per E-Mail gesendet.';
+    openModal('modal-monat-confirm');
+  }
+  function sendeMonatsberichtBestaetigt() {
+    closeModal('modal-monat-confirm');
+    const btn = document.getElementById('btnMonatSend'), status = document.getElementById('monat-status');
+    btn.disabled = true; btn.innerText = 'Wird erstellt...';
+    status.innerText = '⏳ PDF wird erstellt...'; status.style.color = 'var(--text-dim)';
+    google.script.run
+      .withSuccessHandler(res => {
+        btn.disabled = false; btn.innerText = '📧 Per E-Mail';
+        if (res.erfolg) { status.innerText = res.meldung; status.style.color = 'var(--success)'; }
+        else { status.innerText = '❌ ' + res.fehler; status.style.color = 'var(--error)'; }
+      })
+      .withFailureHandler(err => { btn.disabled = false; btn.innerText = '📧 Per E-Mail'; status.innerText = '❌ Fehler: ' + err; status.style.color = 'var(--error)'; })
+      .sendeMonatsbericht(letzterMbMonat, letzterMbJahr, token);
+  }
+  function loescheSchichtBestaetigen(col, datum) {
+    zuLoeschendeSchichtCol = col;
+    document.getElementById('schicht-loeschen-text').innerText = 'Schicht vom ' + datum + ' wird unwiderruflich gelöscht.';
+    openModal('modal-schicht-loeschen');
+  }
+  function loescheSchichtAusfuehren() {
+    closeModal('modal-schicht-loeschen');
+    document.getElementById('btnSchichtLoeschenOk').disabled = true;
+    showToast('⏳ Schicht wird gelöscht...', 'var(--text-dim)');
+    google.script.run
+      .withSuccessHandler(res => {
+        document.getElementById('btnSchichtLoeschenOk').disabled = false;
+        if (res.erfolg) {
+          showToast('✅ Schicht gelöscht', 'var(--success)');
+          document.getElementById('woche-karten-output').innerHTML = '<div class="loading-spinner">Wird geladen...</div>';
+          google.script.run.withSuccessHandler(r2 => { if (r2.erfolg) { letzteWocheDaten = r2.daten; renderWocheKarten(r2.daten); } }).loadTabData(token);
+        } else showToast('❌ ' + res.fehler, 'var(--error)');
+      })
+      .withFailureHandler(() => { document.getElementById('btnSchichtLoeschenOk').disabled = false; showToast('❌ Fehler beim Löschen', 'var(--error)'); })
+      .loescheSchicht(zuLoeschendeSchichtCol, token);
+  }
+  function bewerteDatum(val) {
+    if (!val || val === '-' || val === 'nein' || val.trim() === '') return null;
+    const match = val.toString().trim().match(/^(\d{1,2})\.(\d{1,2})\.(\d{2,4})$/);
+    if (!match) return null;
+    let tag = parseInt(match[1]), mon = parseInt(match[2]), jahr = parseInt(match[3]);
+    if (jahr < 100) jahr += (jahr < 50) ? 2000 : 1900;
+    const ablauf = new Date(jahr, mon - 1, tag);
+    if (isNaN(ablauf.getTime())) return null;
+    const heute = new Date(); heute.setHours(0,0,0,0);
+    const diff = Math.ceil((ablauf - heute) / 86400000);
+    if (diff <= 30) return 'quali-bad'; if (diff <= 90) return 'quali-warn'; return 'quali-ok';
+  }
+  function renderQualisTable(res, targetId) {
+    const out = document.getElementById(targetId); if (!res || !res.daten) return;
+    let h = '<table>';
+    res.daten.forEach(row => { const label = row[0] || '', val = row[1] || '', css = bewerteDatum(val); h += '<tr><td>' + label + '</td>' + (css ? '<td class="' + css + '">' + val + '</td>' : '<td>' + val + '</td>') + '</tr>'; });
+    out.innerHTML = h + '</table>';
+  }
+  function renderDokumente(dok) {
+    const out = document.getElementById('dokumente-output');
+    if (!dok || dok.length === 0) { out.innerHTML = '<div class="ortskunde-leer">Keine Dokumente vorhanden.</div>'; return; }
+    out.innerHTML = '<div class="dokumente-grid">' + dok.map(d => '<a class="dok-kachel" href="' + d.link + '" target="_blank"><div class="dok-kachel-body"><div class="dok-kachel-titel">' + d.titel + '</div></div><div class="dok-kachel-footer"><span class="dok-kachel-arrow">↗</span><span class="dok-kachel-footer-text">Öffnen</span></div></a>').join('') + '</div>';
+  }
+  function saveDraft() {
+    if (!DRAFT_KEY) return;
+    try { const d = {}; FIELD_IDS.forEach(id => { d[id] = document.getElementById(id).value; }); const h = FIELD_IDS.some(id => d[id] !== ''); if (h) localStorage.setItem(DRAFT_KEY, JSON.stringify(d)); else localStorage.removeItem(DRAFT_KEY); } catch(e) {}
+  }
+  function loadDraft() {
+    try { const r = localStorage.getItem(DRAFT_KEY); if (!r) return; const d = JSON.parse(r); if (!FIELD_IDS.some(id => d[id] && d[id] !== '')) return; FIELD_IDS.forEach(id => { const el = document.getElementById(id); if (el && d[id]) el.value = d[id]; }); document.getElementById('draft-banner').classList.add('show'); } catch(e) {}
+  }
+  function clearDraft() { try { localStorage.removeItem(DRAFT_KEY); } catch(e) {} document.getElementById('draft-banner').classList.remove('show'); resetForm(); showToast('🗑️ Entwurf verworfen', 'var(--text-dim)'); }
+  function initDraftListeners() { FIELD_IDS.forEach(id => { const el = document.getElementById(id); if (el) { el.addEventListener('input', saveDraft); el.addEventListener('change', saveDraft); } }); }
+  function renderTable(res, targetId) {
+    const out = document.getElementById(targetId); if (!res || !res.daten) return;
+    let h = '<table>'; res.daten.forEach(row => { h += '<tr>' + row.map(c => '<td>' + (c || '') + '</td>').join('') + '</tr>'; }); out.innerHTML = h + '</table>';
+  }
+  function saveSchicht() {
+    const datum = document.getElementById('datum').value;
+    if (!datum) { showToast('❌ Datum erforderlich!', 'var(--error)'); return; }
+    const b = document.getElementById('dienstBeginn').value, e2 = document.getElementById('dienstEnde').value;
+    if (b && e2) {
+      const [bh, bm] = b.split(':').map(Number), [eh, em] = e2.split(':').map(Number);
+      let m = (eh * 60 + em) - (bh * 60 + bm); if (m < 0) m += 24 * 60;
+      if (m > 645 && !document.getElementById('notizText').value.trim()) { showToast('⚠️ Notiz erforderlich bei mehr als 10:45h!', 'var(--warning)'); document.getElementById('notizText').focus(); return; }
+    }
+    const GROSS_FELDER = ['startBF','zielBF','startBF2','zielBF2'];
+    lastSchichtData = {};
+    FIELD_IDS.forEach(id => { const val = document.getElementById(id).value; lastSchichtData[id] = GROSS_FELDER.includes(id) ? val.toUpperCase() : val; });
+    showConfirmDialog(lastSchichtData);
+  }
+  function showConfirmDialog(data) {
+    const labels = { datum:'Datum', zugNr:'Zug-Nr', relation:'Leistung', lokNr:'Lok-Nr', reiseArt:'Reise-Art', startBF:'Start BF', zielBF:'Ziel BF', reiseBeginn:'Reise Beginn', reiseEnde:'Reise Ende', dienstBeginn:'Dienst Beginn', dienstEnde:'Dienst Ende', reiseArt2:'Reise-Art 2', startBF2:'Start BF 2', zielBF2:'Ziel BF 2', reiseBeginn2:'Reise Beginn 2', reiseEnde2:'Reise Ende 2' };
+    let s = ''; Object.entries(labels).forEach(([key, label]) => { if (data[key]) { const val = key === 'datum' ? data[key].split('-').reverse().join('.') : data[key]; s += '<div class="summary-row"><span class="summary-label">' + label + '</span><span class="summary-value">' + val + '</span></div>'; } });
+    document.getElementById('confirm-summary').innerHTML = s; openModal('modal-confirm');
+  }
+  function confirmSave() {
+    const btn = document.getElementById('confirmBtn'); btn.disabled = true; btn.innerText = 'Speichert...';
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res.erfolg) {
+          document.getElementById('confirm-summary').innerHTML = '<div style="text-align:center;padding:40px 0;font-size:24px;color:var(--success);">✅<br><br>Gespeichert!</div>';
+          btn.style.display = 'none'; document.querySelector('#modal-confirm .btn-gray').innerText = 'Schließen';
+          try { localStorage.removeItem(DRAFT_KEY); } catch(e) {} document.getElementById('draft-banner').classList.remove('show');
+          const notiz = document.getElementById('notizText').value.trim();
+          if (notiz) { google.script.run.speichereNotiz({ notiz, datum: lastSchichtData.datum, zugNr: lastSchichtData.zugNr, relation: lastSchichtData.relation, lokNr: lastSchichtData.lokNr }, token); document.getElementById('notizText').value = ''; }
+          setTimeout(() => {
+            closeModal('modal-confirm'); resetForm(); resetButton();
+            document.getElementById('woche-karten-output').innerHTML = '<div class="loading-spinner">Wird geladen...</div>';
+            google.script.run.withSuccessHandler(r2 => { if (r2.erfolg) { letzteWocheDaten = r2.daten; renderWocheKarten(r2.daten); } }).loadTabData(token);
+          }, 1500);
+        } else { showToast('❌ ' + res.fehler, 'var(--error)'); btn.disabled = false; btn.innerText = '✓ Speichern'; }
+      })
+      .schichtSpeichern(lastSchichtData, token);
+  }
+  function resetForm() { FIELD_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; }); }
+  function resetButton() { const btn = document.getElementById('confirmBtn'); btn.style.display = 'block'; btn.disabled = false; btn.innerText = '✓ Speichern'; const g = document.querySelector('#modal-confirm .btn-gray'); g.innerText = 'Abbrechen'; g.onclick = () => closeModal('modal-confirm'); }
+  function sendUrlaubAntrag() {
+    const von = document.getElementById('urlaub-von').value, bis = document.getElementById('urlaub-bis').value, notiz = document.getElementById('urlaub-notiz').value;
+    if (!von || !bis) { showToast('❌ Beide Daten erforderlich!', 'var(--error)'); return; }
+    const btn = document.getElementById('btnUrlaubSend'); btn.disabled = true; btn.innerText = 'Wird gesendet...';
+    google.script.run.withSuccessHandler(res => { if (res.erfolg) { showToast(res.meldung, 'var(--success)'); setTimeout(() => { closeModal('modal-urlaub'); ['urlaub-von','urlaub-bis','urlaub-notiz'].forEach(id => document.getElementById(id).value = ''); btn.disabled = false; btn.innerText = '✉️ Senden'; }, 1000); } else { showToast('❌ ' + res.fehler, 'var(--error)'); btn.disabled = false; btn.innerText = '✉️ Senden'; } }).withFailureHandler(() => { showToast('❌ Fehler', 'var(--error)'); btn.disabled = false; btn.innerText = '✉️ Senden'; }).sendUrlaubAntrag({ von, bis, notiz }, token);
+  }
+  function sendKrankMeldung() {
+    const von = document.getElementById('krank-von').value, bis = document.getElementById('krank-bis').value;
+    if (!von || !bis) { showToast('❌ Beide Daten erforderlich!', 'var(--error)'); return; }
+    const btn = document.getElementById('btnKrankSend'); btn.disabled = true; btn.innerText = 'Wird gesendet...';
+    google.script.run.withSuccessHandler(res => { if (res.erfolg) { showToast(res.meldung, 'var(--success)'); setTimeout(() => { closeModal('modal-krank'); ['krank-von','krank-bis','krank-notiz'].forEach(id => document.getElementById(id).value = ''); btn.disabled = false; btn.innerText = '✉️ Abschicken'; }, 1000); } else { showToast('❌ ' + res.fehler, 'var(--error)'); btn.disabled = false; btn.innerText = '✉️ Abschicken'; } }).withFailureHandler(() => { showToast('❌ Fehler', 'var(--error)'); btn.disabled = false; btn.innerText = '✉️ Abschicken'; }).sendKrankMeldung({ von, bis }, token);
+  }
+  function calcVMATagegeld(vonDatumISO, bisDatumISO, vonZeit, bisZeit, uebernachtung) {
+    if (!vonDatumISO || !bisDatumISO) return { total: 0, breakdown: '' };
+    function minFromTime(t) { if (!t) return null; const [h,m] = t.split(':').map(Number); return h*60+m; }
+    function dateFromISO(iso) { const [y,m,d] = iso.split('-').map(Number); return Date.UTC(y,m-1,d); }
+    function fmtISO(iso) { const [y,m,d] = iso.split('-'); return d+'.'+m+'.'+y; }
+    const diffDays = Math.round((dateFromISO(bisDatumISO) - dateFromISO(vonDatumISO)) / 86400000);
+    const vonMin = minFromTime(vonZeit) ?? 0, bisMin = minFromTime(bisZeit) ?? 1439;
+    let total = 0; const parts = [];
+    if (uebernachtung && diffDays > 0) {
+      total += 14; parts.push('Abfahrtstag ' + fmtISO(vonDatumISO) + ' → 14 €');
+      const mitte = diffDays - 1;
+      if (mitte > 0) { total += mitte * 28; parts.push(mitte + ' Volltage → ' + (mitte * 28) + ' €'); }
+      total += 14; parts.push('Rückkehrtag ' + fmtISO(bisDatumISO) + ' → 14 €');
+    } else if (diffDays === 0) {
+      let abwMin = bisMin - vonMin; if (abwMin <= 0) abwMin += 1440;
+      const h = abwMin / 60;
+      if (h > 8) { total = 14; parts.push(fmtISO(vonDatumISO) + ': ' + h.toFixed(1) + 'h > 8h → 14 €'); }
+      else { parts.push(fmtISO(vonDatumISO) + ': ' + h.toFixed(1) + 'h ≤ 8h → 0 €'); }
+    } else if (diffDays === 1) {
+      const min1 = 1440 - vonMin, min2 = bisMin, gesamtH = (min1 + min2) / 60;
+      if (gesamtH > 8) { const tag = min1 >= min2 ? fmtISO(vonDatumISO) : fmtISO(bisDatumISO); total = 14; parts.push('Mitternacht: ' + gesamtH.toFixed(1) + 'h, überwiegend ' + tag + ' → 14 €'); }
+      else { parts.push('Mitternacht: ' + gesamtH.toFixed(1) + 'h ≤ 8h → 0 €'); }
+    } else {
+      const h1 = (1440 - vonMin) / 60;
+      if (h1 > 8) { total += 14; parts.push(fmtISO(vonDatumISO) + ': ' + h1.toFixed(1) + 'h → 14 €'); }
+      else { parts.push(fmtISO(vonDatumISO) + ': ' + h1.toFixed(1) + 'h ≤ 8h → 0 €'); }
+      const mitte = diffDays - 1;
+      if (mitte > 0) { total += mitte * 28; parts.push(mitte + ' Volltage → ' + (mitte * 28) + ' €'); }
+      const hN = bisMin / 60;
+      if (hN > 8) { total += 14; parts.push(fmtISO(bisDatumISO) + ': ' + hN.toFixed(1) + 'h → 14 €'); }
+      else { parts.push(fmtISO(bisDatumISO) + ': ' + hN.toFixed(1) + 'h ≤ 8h → 0 €'); }
+    }
+    return { total, breakdown: parts.join(' · ') };
+  }
+  function updateVMATagegeld() {
+    const vd=document.getElementById('vma-von-datum').value, vz=document.getElementById('vma-von-zeit').value;
+    const bd=document.getElementById('vma-bis-datum').value, bz=document.getElementById('vma-bis-zeit').value;
+    const ueb=document.getElementById('vma-uebernachtung').checked;
+    const el=document.getElementById('vma-tagegeld-val'), brEl=document.getElementById('vma-tg-breakdown');
+    if (!vd || !bd) { el.innerText = '—'; el.style.color = 'var(--accent)'; brEl.innerText = vd ? 'Bis-Datum eintragen' : ''; return; }
+    const res = calcVMATagegeld(vd, bd, vz, bz, ueb);
+    el.innerText = res.total + ' €';
+    el.style.color = res.total > 14 ? 'var(--success)' : res.total === 14 ? 'var(--warning)' : 'var(--text-dim)';
+    brEl.innerText = res.breakdown;
+  }
+  function vmaInitDropdown() {
+    const heute = new Date();
+    const js = document.getElementById('vma-jahr-select');
+    if (js && js.options.length === 0) {
+      for (let j = heute.getFullYear() - 1; j <= heute.getFullYear() + 1; j++) {
+        const o = document.createElement('option'); o.value = j; o.innerText = j;
+        if (j === heute.getFullYear()) o.selected = true; js.appendChild(o);
+      }
+    }
+    document.getElementById('vma-monat-select').value = heute.getMonth() + 1;
+  }
+  function vmaDropdownGeaendert() {
+    aktuellVMAMonat = parseInt(document.getElementById('vma-monat-select').value);
+    aktuellVMAJahr  = parseInt(document.getElementById('vma-jahr-select').value);
+    ladeVMADaten(false);
+  }
+  function ladeVMADaten(reset) {
+    if (reset !== false) { const heute = new Date(); aktuellVMAMonat = heute.getMonth() + 1; aktuellVMAJahr = heute.getFullYear(); vmaInitDropdown(); }
+    document.getElementById('vma-lade-status').innerText = '⏳';
+    document.getElementById('vma-senden-bereich').style.display = 'none';
+    google.script.run
+      .withSuccessHandler(res => {
+        document.getElementById('vma-lade-status').innerText = '';
+        if (!res.erfolg) { document.getElementById('vma-lade-status').innerText = '❌ ' + res.fehler; return; }
+        renderVMATabelle(res.eintraege);
+      })
+      .withFailureHandler(err => { document.getElementById('vma-lade-status').innerText = '❌ ' + err; })
+      .ladeVMAEintraege(aktuellVMAMonat, aktuellVMAJahr, token);
+  }
+  function renderVMATabelle(eintraege) {
+    const out = document.getElementById('vma-output');
+    const sendenBereich = document.getElementById('vma-senden-bereich');
+    if (!eintraege || eintraege.length === 0) { out.innerHTML = '<div class="ortskunde-leer">Noch keine Einträge für diesen Monat.</div>'; sendenBereich.style.display = 'none'; return; }
+    function kurzDatum(str) { if (!str) return ''; const t = str.split('.'); if (t.length < 3) return str; return t[0]+'.'+t[1]+'.'+t[2].slice(-2); }
+    function parseDE(str) { const t=(str||'').split('.'); if(t.length<3)return null; let j=parseInt(t[2]); if(j<100)j+=j<50?2000:1900; return new Date(j,parseInt(t[1])-1,parseInt(t[0])); }
+    function fmtDE(d) { return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getFullYear()).slice(-2); }
+    function minFromTime(t) { if(!t)return 0; const p=(t||'').split(':'); return parseInt(p[0])*60+parseInt(p[1]); }
+    function dateDiffKalendertage(d1,d2) { return Math.round((Date.UTC(d2.getFullYear(),d2.getMonth(),d2.getDate())-Date.UTC(d1.getFullYear(),d1.getMonth(),d1.getDate()))/86400000); }
+    const anzeigeZeilen=[]; let gesamt=0;
+    eintraege.forEach(e=>{
+      const vonD=parseDE(e.vonDatum),bisD=parseDE(e.bisDatum),diff=vonD&&bisD?dateDiffKalendertage(vonD,bisD):0;
+      const tgGesamt=parseFloat(e.tagegeld)||0,ue=e.uebernachtung,vonMin=minFromTime(e.vonZeit),bisMin=minFromTime(e.bisZeit);
+      const land=(e.land||'').trim().toLowerCase()==='deutschland'?'DE':(e.land||'').trim();
+      if(diff<=0){anzeigeZeilen.push({datum:kurzDatum(e.vonDatum),land,zeitVon:e.vonZeit,zeitBis:e.bisZeit,uebernachtung:ue,verkehr:e.verkehr,kunde:e.kunde,tagegeld:tgGesamt,zeilenIndex:e.zeilenIndex,ersteZeile:true});gesamt+=tgGesamt;}
+      else if(!ue&&diff===1){const min1=1440-vonMin,min2=bisMin,gh=(min1+min2)/60,tg=gh>8?14:0,t1=min1>=min2;anzeigeZeilen.push({datum:kurzDatum(e.vonDatum),land,zeitVon:e.vonZeit,zeitBis:'',uebernachtung:false,verkehr:e.verkehr,kunde:e.kunde,tagegeld:t1?tg:0,zeilenIndex:e.zeilenIndex,ersteZeile:true});gesamt+=t1?tg:0;anzeigeZeilen.push({datum:kurzDatum(e.bisDatum),land,zeitVon:'',zeitBis:e.bisZeit,uebernachtung:false,verkehr:e.verkehr,kunde:e.kunde,tagegeld:t1?0:tg,zeilenIndex:null,ersteZeile:false});gesamt+=t1?0:tg;}
+      else if(!ue&&diff>1){const h1=(1440-vonMin)/60,tg1=h1>8?14:0;anzeigeZeilen.push({datum:kurzDatum(e.vonDatum),land,zeitVon:e.vonZeit,zeitBis:'',uebernachtung:false,verkehr:e.verkehr,kunde:e.kunde,tagegeld:tg1,zeilenIndex:e.zeilenIndex,ersteZeile:true});gesamt+=tg1;for(let d=1;d<diff;d++){const cur=new Date(vonD);cur.setDate(vonD.getDate()+d);anzeigeZeilen.push({datum:fmtDE(cur),land,zeitVon:'',zeitBis:'',uebernachtung:false,verkehr:e.verkehr,kunde:e.kunde,tagegeld:28,zeilenIndex:null,ersteZeile:false});gesamt+=28;}const hN=bisMin/60,tgN=hN>8?14:0;anzeigeZeilen.push({datum:kurzDatum(e.bisDatum),land,zeitVon:'',zeitBis:e.bisZeit,uebernachtung:false,verkehr:e.verkehr,kunde:e.kunde,tagegeld:tgN,zeilenIndex:null,ersteZeile:false});gesamt+=tgN;}
+      else{anzeigeZeilen.push({datum:kurzDatum(e.vonDatum),land,zeitVon:e.vonZeit,zeitBis:'',uebernachtung:true,verkehr:e.verkehr,kunde:e.kunde,tagegeld:14,zeilenIndex:e.zeilenIndex,ersteZeile:true});gesamt+=14;for(let d=1;d<diff;d++){const cur=new Date(vonD);cur.setDate(vonD.getDate()+d);anzeigeZeilen.push({datum:fmtDE(cur),land,zeitVon:'',zeitBis:'',uebernachtung:true,verkehr:e.verkehr,kunde:e.kunde,tagegeld:28,zeilenIndex:null,ersteZeile:false});gesamt+=28;}anzeigeZeilen.push({datum:kurzDatum(e.bisDatum),land,zeitVon:'',zeitBis:e.bisZeit,uebernachtung:true,verkehr:e.verkehr,kunde:e.kunde,tagegeld:14,zeilenIndex:null,ersteZeile:false});gesamt+=14;}
+    });
+    let html='<div class="vma-table-wrapper"><table class="vma-table"><thead><tr><th style="width:22px;padding:10px 4px;">#</th><th>Datum</th><th>Land</th><th>Zeit von</th><th>Zeit bis</th><th>Übern.</th><th>Verkehr</th><th>Kunde</th><th>Tagegeld</th><th></th></tr></thead><tbody>';
+    let nr=1;
+    anzeigeZeilen.forEach(z=>{
+      const tg=parseFloat(z.tagegeld)||0,cls=tg>=28?'vma-tg-28':tg>=14?'vma-tg-14':'vma-tg-0';
+      const del=z.ersteZeile&&z.zeilenIndex?'<button class="vma-del-btn" onclick="vmaLoeschenBestaetigen('+z.zeilenIndex+')">✕</button>':'';
+      const nrA=z.ersteZeile?nr++:'';
+      html+='<tr><td style="color:var(--text-dim);font-size:11px;padding:9px 4px;">'+nrA+'</td><td style="font-weight:700;">'+(z.datum||'')+'</td><td style="font-size:11px;">'+(z.land||'')+'</td><td>'+(z.zeitVon||'')+'</td><td>'+(z.zeitBis||'')+'</td><td>'+(z.uebernachtung?'✓':'')+'</td><td style="font-size:11px;">'+(z.verkehr||'')+'</td><td style="text-align:left;font-size:11px;">'+(z.kunde||'')+'</td><td class="'+cls+';">'+tg+' €</td><td>'+del+'</td></tr>';
+    });
+    html+='<tr class="vma-sum-row"><td colspan="9"></td><td style="font-size:13px;text-align:center;">'+gesamt.toFixed(2).replace('.',',')+' €</td></tr></tbody></table></div>';
+    out.innerHTML=html; sendenBereich.style.display='block'; document.getElementById('vma-senden-status').innerText='';
+  }
+  function vmaEintragSpeichern() {
+    const vd=document.getElementById('vma-von-datum').value, bd=document.getElementById('vma-bis-datum').value;
+    if(!vd){showToast('❌ Von-Datum erforderlich!','var(--error)');return;}
+    if(!bd){showToast('❌ Bis-Datum erforderlich!','var(--error)');return;}
+    const vz=document.getElementById('vma-von-zeit').value, bz=document.getElementById('vma-bis-zeit').value;
+    const ueb=document.getElementById('vma-uebernachtung').checked;
+    const res=calcVMATagegeld(vd,bd,vz,bz,ueb);
+    const fmtDate=iso=>{const[y,m,d]=iso.split('-');return d+'.'+m+'.'+y;};
+    const daten={vonDatum:fmtDate(vd),vonZeit:vz||'',bisDatum:fmtDate(bd),bisZeit:bz||'',uebernachtung:ueb,land:document.getElementById('vma-land').value,verkehr:document.getElementById('vma-verkehr').value,kunde:document.getElementById('vma-kunde').value,tagegeld:res.total};
+    const btn=document.getElementById('btnVMASave'); btn.disabled=true; btn.innerText='Speichert...';
+    google.script.run
+      .withSuccessHandler(r=>{btn.disabled=false;btn.innerText='💾 Speichern';if(r.erfolg){showToast('✅ Gespeichert! ('+res.total+' €)','var(--success)');closeModal('modal-vma-neu');['vma-von-datum','vma-von-zeit','vma-bis-datum','vma-bis-zeit'].forEach(id=>document.getElementById(id).value='');document.getElementById('vma-kunde').value='CD Cargo';document.getElementById('vma-uebernachtung').checked=false;document.getElementById('vma-tagegeld-val').innerText='—';document.getElementById('vma-tg-breakdown').innerText='';ladeVMADaten();}else showToast('❌ '+r.fehler,'var(--error)');})
+      .withFailureHandler(err=>{btn.disabled=false;btn.innerText='💾 Speichern';showToast('❌ Fehler: '+err,'var(--error)');})
+      .speichereVMAEintrag(daten,token);
+  }
+  function vmaLoeschenBestaetigen(i){zuLoeschenderVMAIndex=i;openModal('modal-vma-loeschen');}
+  function vmaLoeschenAusfuehren(){
+    closeModal('modal-vma-loeschen');
+    document.getElementById('btnVMALoeschenOk').disabled=true;
+    google.script.run
+      .withSuccessHandler(res=>{document.getElementById('btnVMALoeschenOk').disabled=false;if(res.erfolg){showToast('✅ Eintrag gelöscht','var(--success)');ladeVMADaten();}else showToast('❌ '+res.fehler,'var(--error)');})
+      .withFailureHandler(()=>{document.getElementById('btnVMALoeschenOk').disabled=false;showToast('❌ Fehler','var(--error)');})
+      .loescheVMAEintrag(zuLoeschenderVMAIndex,token);
+  }
+  function vmaMonatsberichtSenden(){vmaSendenBestaetigt();}
+  function vmaSendenBestaetigt(){
+    const btn=document.getElementById('btnVMASenden'),status=document.getElementById('vma-senden-status');
+    btn.disabled=true; btn.innerText='Wird gesendet...'; status.innerText='⏳ Wird gesendet...'; status.style.color='var(--text-dim)';
+    google.script.run
+      .withSuccessHandler(res=>{btn.disabled=false;btn.innerText='📧 Monat per E-Mail senden';if(res.erfolg){status.innerText=res.meldung;status.style.color='var(--success)';}else{status.innerText='❌ '+res.fehler;status.style.color='var(--error)';}})
+      .withFailureHandler(err=>{btn.disabled=false;btn.innerText='📧 Monat per E-Mail senden';status.innerText='❌ Fehler: '+err;status.style.color='var(--error)';})
+      .sendeVMAMonatsbericht(aktuellVMAMonat,aktuellVMAJahr,token);
+  }
+  let ortskundeData = [];
+  function renderOrtskunde(eintraege) {
+    const out = document.getElementById('ortskunde-output');
+    if (!eintraege || eintraege.length === 0) { out.innerHTML = '<div class="ortskunde-leer">Keine Einträge vorhanden.</div>'; return; }
+    ortskundeData = eintraege;
+    const gruppen = {};
+    eintraege.forEach((e, i) => { const kat = e.kategorie || 'Weitere'; if (!gruppen[kat]) gruppen[kat] = []; gruppen[kat].push({ ...e, _idx: i }); });
+    const reihenfolge = ['CD Cargo', 'Weitere'];
+    Object.keys(gruppen).forEach(k => { if (!reihenfolge.includes(k)) reihenfolge.push(k); });
+    out.innerHTML = reihenfolge.filter(k => gruppen[k]).map(k => {
+      const isCd = k === 'CD Cargo', katId = k.replace(/\s/g, '_');
+      const items = gruppen[k].map(e => '<div class="accordion-item" id="acc-' + e._idx + '"><div class="accordion-header" onclick="toggleAccordion(' + e._idx + ')">' + e.titel + '</div><div class="accordion-body">' + e.inhalt + '</div></div>').join('');
+      return '<div class="kat-folder' + (isCd ? ' cd-cargo' : '') + '" id="kat-' + katId + '"><div class="kat-header" onclick="toggleKat(\'' + katId + '\')">' + k + '</div><div class="kat-body">' + items + '</div></div>';
+    }).join('');
+    const cd = document.getElementById('kat-CD_Cargo'); if (cd) cd.classList.add('open');
+  }
+  function toggleAccordion(i){document.getElementById('acc-'+i).classList.toggle('open');}
+  function toggleKat(k){document.getElementById('kat-'+k).classList.toggle('open');}
+  function filterOrtskunde(q) {
+    const lower=q.toLowerCase().trim();
+    const esc=lower.replace(/[.*+?^${}()|[\\]\\]/g,'\\$&');
+    const rx=lower?new RegExp('('+esc+')','gi'):null;
+    ortskundeData.forEach((e,i)=>{
+      const item=document.getElementById('acc-'+i);if(!item)return;
+      const treffer=!lower||e.titel.toLowerCase().includes(lower)||e.inhalt.toLowerCase().includes(lower);
+      item.classList.toggle('accordion-hidden',!treffer);
+      const body=item.querySelector('.accordion-body');if(!body)return;
+      if(rx&&treffer){body.innerHTML=e.inhalt.replace(rx,'<mark class="treffer">$1</mark>');item.classList.add('open');}
+      else{body.innerHTML=e.inhalt;if(!lower)item.classList.remove('open');}
+    });
+    document.querySelectorAll('.kat-folder').forEach(f=>{
+      const s=f.querySelectorAll('.accordion-item:not(.accordion-hidden)').length;
+      f.classList.toggle('kat-hidden',!s);if(lower&&s)f.classList.add('open');
+    });
+  }
+  function showToast(msg,color){const t=document.getElementById('toast');t.innerText=msg;t.style.borderColor=color;t.className='show';setTimeout(()=>{t.className='';},3000);}
+  function openModal(id){document.getElementById(id).classList.add('show');}
+  function closeModal(id){document.getElementById(id).classList.remove('show');}
+  function switchTabZuQualis(){const n=document.querySelector('.nav-item[onclick*="tab-qualis"]');if(n)n.click();}
+</script>
 </body>
 </html>
