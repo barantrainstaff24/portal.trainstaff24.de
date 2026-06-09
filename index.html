@@ -451,7 +451,7 @@
 }
 
   window.onload = () => {
-    document.getElementById('token-input').addEventListener('keydown', e => { if (e.key === 'Enter') submitToken(); });
+    document.getElementById('login-passwort').addEventListener('keydown', e => { if (e.key === 'Enter') submitLogin(); });
     initMonatJahr();
     token = resolveToken();
     if (!token) { zeigeTokenScreen(false); return; }
