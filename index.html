@@ -469,11 +469,15 @@
   google.script.run
     .withSuccessHandler(res => {
       if (!res.erfolg) {
-        document.querySelector('.container').style.display = 'none';
-        document.getElementById('login-email').value = '';
-        document.getElementById('login-passwort').value = '';
-        localStorage.removeItem('ts24_token');
-        zeigeTokenScreen(true);
+         document.querySelector('.container').style.display = 'none';
+document.getElementById('login-email').value = '';
+document.getElementById('login-passwort').value = '';
+localStorage.removeItem('ts24_token');
+const msg = document.getElementById('token-msg');
+msg.innerText = '\u274c Token ungültig. Bitte erneut anmelden.';
+msg.style.color = 'var(--error)';
+document.getElementById('token-screen').classList.add('show');
+setTimeout(() => document.getElementById('login-email').focus(), 100);
         return;
       }
       renderTable(res.abwesenheit, 'status-output');
