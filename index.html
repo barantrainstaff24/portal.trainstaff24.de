@@ -462,32 +462,27 @@
     startApp();
   };
 
-  function startApp() {
+ function startApp() {
   DRAFT_KEY = 'ts24_draft_' + token;
   loadDraft(); initDraftListeners();
   document.querySelector('.container').style.display = 'block';
   google.script.run
-    .withSuccessHandler(res => {
-      if (!res.erfolg) {
-         document.querySelector('.container').style.display = 'none';
-document.getElementById('login-email').value = '';
-document.getElementById('login-passwort').value = '';
-localStorage.removeItem('ts24_token');
-const msg = document.getElementById('token-msg');
-msg.innerText = '\u274c Token ungültig. Bitte erneut anmelden.';
-msg.style.color = 'var(--error)';
-document.getElementById('token-screen').classList.add('show');
-setTimeout(() => document.getElementById('login-email').focus(), 100);
-        return;
-      }
-      renderTable(res.abwesenheit, 'status-output');
-      renderQualisTable(res.qualis, 'qualis-output');
-      letzteWocheDaten = res.daten;
-      renderWocheKarten(res.daten);
-      renderBestaetigungen(res.aufgaben, res.bestaetigt);
+    .withSuccessHandler(data => {
+      if (data.erfolg) { renderTable(data.abwesenheit, 'status-output'); renderQualisTable(data.qualis, 'qualis-output'); }
+      else { document.querySelector('.container').style.display = 'none'; document.getElementById('login-email').value = ''; document.getElementById('login-passwort').value = ''; localStorage.removeItem('ts24_token'); zeigeTokenScreen(true); }
     })
     .withFailureHandler(err => showToast('\u274c Fehler: ' + err, 'var(--error)'))
-    .getStartDaten(token);
+    .getInitialData(token);
+  google.script.run
+    .withSuccessHandler(res => {
+      if (res.erfolg) { letzteWocheDaten = res.daten; renderWocheKarten(res.daten); }
+      else document.getElementById('woche-karten-output').innerHTML = '<div class="loading-spinner">\u274c ' + res.fehler + '</div>';
+    })
+    .withFailureHandler(() => { document.getElementById('woche-karten-output').innerHTML = '<div class="loading-spinner">\u274c Fehler beim Laden</div>'; })
+    .loadTabData(token);
+  google.script.run
+    .withSuccessHandler(res => { if (res.erfolg) renderBestaetigungen(res.aufgaben, res.bestaetigt); })
+    .ladeBestaetigungen(token);
 }
 
   function ladeOrtskundeOnce() {
