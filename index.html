@@ -201,13 +201,7 @@
     <div class="card" style="margin-top:10px;"><div class="card-header">Notiz</div>
       <div style="padding:10px 14px;"><textarea id="notizText" rows="3" placeholder="Notizen, Pausen, ..."></textarea></div>
     </div>
-	document.getElementById('saveBtn').addEventListener('touchend', function(e) {
-  e.preventDefault();
-  saveSchicht();
-});
-document.getElementById('saveBtn').addEventListener('click', function(e) {
-  saveSchicht();
-});
+	<button class="btn" id="saveBtn" onclick="saveSchicht()">Schicht speichern</button>
   </div>
   <div id="tab-berichte" class="tab-pane">
     <div class="section-label-bar">WOCHENBERICHT</div>
@@ -305,6 +299,7 @@ document.getElementById('saveBtn').addEventListener('click', function(e) {
 <div id="modal-schicht-loeschen" class="modal"><div class="modal-content">
   <h3>Schicht löschen</h3>
   <p id="schicht-loeschen-text" style="text-align:center;font-size:13px;color:var(--text-dim);margin:0 0 16px 0;"></p>
+   
   <button class="btn btn-red" id="btnSchichtLoeschenOk" onclick="loescheSchichtAusfuehren()">Ja, löschen</button>
   <button class="btn btn-gray" onclick="closeModal('modal-schicht-loeschen')">Abbrechen</button>
 </div></div>
