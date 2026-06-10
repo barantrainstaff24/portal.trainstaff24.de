@@ -410,13 +410,7 @@
   }
 
   function resolveToken() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const urlToken = urlParams.get('token');
-  if (urlToken) return urlToken;
-  const saved = localStorage.getItem('ts24_token');
-  if (saved) return saved;
-  const hash = window.location.hash.replace('#', '').trim();
-  return hash || null;
+  return localStorage.getItem('ts24_token') || null;
 }
 
   function zeigeTokenScreen(fehler) {
