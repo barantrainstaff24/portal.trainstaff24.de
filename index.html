@@ -702,6 +702,7 @@
     let h = '<table>'; res.daten.forEach(row => { h += '<tr>' + row.map(c => '<td>' + (c || '') + '</td>').join('') + '</tr>'; }); out.innerHTML = h + '</table>';
   }
   function saveSchicht() {
+      document.activeElement.blur();	
     const datum = document.getElementById('datum').value;
     if (!datum) { showToast('❌ Datum erforderlich!', 'var(--error)'); return; }
     const b = document.getElementById('dienstBeginn').value, e2 = document.getElementById('dienstEnde').value;
