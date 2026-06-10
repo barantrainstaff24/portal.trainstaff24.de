@@ -202,7 +202,7 @@
     <div class="card" style="margin-top:10px;"><div class="card-header">Notiz</div>
       <div style="padding:10px 14px;"><textarea id="notizText" rows="3" placeholder="Notizen, Pausen, ..."></textarea></div>
     </div>
-<button class="btn" id="saveBtn" onclick="alert('test')" style="touch-action:manipulation;cursor:pointer;position:relative;z-index:999;">Schicht speichern</button>  </div>
+  	<button class="btn" id="saveBtn" onclick="saveSchicht()">Schicht speichern</button>
   <div id="tab-berichte" class="tab-pane">
     <div class="section-label-bar">WOCHENBERICHT</div>
     <div id="woche-karten-output"><div class="loading-spinner">Wird geladen...</div></div>
@@ -702,7 +702,7 @@
     const out = document.getElementById(targetId); if (!res || !res.daten) return;
     let h = '<table>'; res.daten.forEach(row => { h += '<tr>' + row.map(c => '<td>' + (c || '') + '</td>').join('') + '</tr>'; }); out.innerHTML = h + '</table>';
   }
-  function saveSchicht() {  alert('saveSchicht aufgerufen');
+  function saveSchicht() {  
       document.activeElement.blur();	
     const datum = document.getElementById('datum').value;
     if (!datum) { showToast('❌ Datum erforderlich!', 'var(--error)'); return; }
