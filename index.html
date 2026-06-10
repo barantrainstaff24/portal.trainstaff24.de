@@ -145,6 +145,8 @@
     .vma-toggle input:checked + .vma-slider{background:var(--accent);}
     .vma-toggle input:checked + .vma-slider:before{transform:translateX(20px);}
     .vma-tg-preview{background:rgba(255,159,10,0.08);border:1px solid rgba(255,159,10,0.2);border-radius:10px;padding:12px 16px;margin:14px 0 4px 0;display:flex;justify-content:space-between;align-items:center;}
+#tab-entry { pointer-events: all !important; }
+#saveBtn { pointer-events: all !important; position: relative; z-index: 9999; }
   </style>
 </head>
 
@@ -244,7 +246,7 @@
       <select id="vma-monat-select" onchange="vmaDropdownGeaendert()" style="flex:1;width:auto;text-align:left;">
         <option value="1">Januar</option><option value="2">Februar</option>
         <option value="3">März</option><option value="4">April</option>
-        <option value="5">Mai</option><option value="6">Juni</option>
+        <option value="5">Mai</option><option val</styleue="6">Juni</option>
         <option value="7">Juli</option><option value="8">August</option>
         <option value="9">September</option><option value="10">Oktober</option>
         <option value="11">November</option><option value="12">Dezember</option>
