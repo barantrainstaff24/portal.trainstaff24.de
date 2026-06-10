@@ -702,7 +702,7 @@
     const out = document.getElementById(targetId); if (!res || !res.daten) return;
     let h = '<table>'; res.daten.forEach(row => { h += '<tr>' + row.map(c => '<td>' + (c || '') + '</td>').join('') + '</tr>'; }); out.innerHTML = h + '</table>';
   }
-  function saveSchicht() {
+  function saveSchicht() {  alert('saveSchicht aufgerufen');
       document.activeElement.blur();	
     const datum = document.getElementById('datum').value;
     if (!datum) { showToast('❌ Datum erforderlich!', 'var(--error)'); return; }
