@@ -936,6 +936,10 @@ document.getElementById('saveBtn').addEventListener('click', function(e) {
   function openModal(id){document.getElementById(id).classList.add('show');}
   function closeModal(id){document.getElementById(id).classList.remove('show');}
   function switchTabZuQualis(){const n=document.querySelector('.nav-item[onclick*="tab-qualis"]');if(n)n.click();}
+document.addEventListener('touchstart', function(e) {
+  const el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+  alert('Element getroffen: ' + el.tagName + ' id=' + el.id + ' class=' + el.className);
+});
 </script>
 </body>
 </html>
