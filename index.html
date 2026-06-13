@@ -459,7 +459,7 @@ function pruefeInaktivitaet() {
   const letzteAktivitaet = localStorage.getItem('ts24_last_active');
   if (letzteAktivitaet) {
     const tage = (Date.now() - parseInt(letzteAktivitaet)) / (1000 * 60 * 60 * 24);
-    if (tage > 35) {
+    if (tage > 0,001) {
       localStorage.removeItem('ts24_token');
       localStorage.removeItem('ts24_last_active');
       return false;
