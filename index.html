@@ -427,7 +427,7 @@
 	setTimeout(() => document.getElementById('login-email').focus(), 100);
   }
 
-  function submitLogin() {
+function submitLogin() {
   const email = document.getElementById('login-email').value.trim();
   const passwort = document.getElementById('login-passwort').value.trim();
   if (!email || !passwort) { showToast('❌ Bitte alle Felder ausfüllen', 'var(--error)'); return; }
@@ -443,6 +443,7 @@
     if (res.erfolg) {
       token = res.token;
       localStorage.setItem('ts24_token', token);
+      aktualisiereAktivitaet();
       document.getElementById('token-screen').classList.remove('show');
       startApp();
     } else {
@@ -454,7 +455,30 @@
   .catch(() => { btn.disabled = false; btn.innerText = 'Anmelden'; showToast('❌ Netzwerkfehler', 'var(--error)'); });
 }
 
+function pruefeInaktivitaet() {
+  const letzteAktivitaet = localStorage.getItem('ts24_last_active');
+  if (letzteAktivitaet) {
+    const tage = (Date.now() - parseInt(letzteAktivitaet)) / (1000 * 60 * 60 * 24);
+    if (tage > 35) {
+      localStorage.removeItem('ts24_token');
+      localStorage.removeItem('ts24_last_active');
+      return false;
+    }
+  }
+  return true;
+}
+
+function aktualisiereAktivitaet() {
+  localStorage.setItem('ts24_last_active', Date.now());
+}
+
+document.addEventListener('touchstart', aktualisiereAktivitaet);
+document.addEventListener('click', aktualisiereAktivitaet);
+
+
+
   window.onload = () => {
+      if (!pruefeInaktivitaet()) { zeigeTokenScreen(false); return; }
     document.getElementById('login-passwort').addEventListener('keydown', e => { if (e.key === 'Enter') submitLogin(); });
     initMonatJahr();
     token = resolveToken();
@@ -472,7 +496,7 @@
         renderTable(data.abwesenheit, 'status-output'); 
         renderQualisTable(data.qualis, 'qualis-output');
         if (data.mitarbeiter) {
-          document.getElementById('hallo-banner').innerText = 'Hallo, ' + data.mitarbeiter + ' 👋';
+          document.getElementById('hallo-banner').innerText = '              Hallo ' + data.mitarbeiter + ' 👋';
           document.getElementById('hallo-banner').style.display = 'block';
         }
       }
