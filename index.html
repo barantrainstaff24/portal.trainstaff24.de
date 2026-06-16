@@ -175,7 +175,7 @@
 </div>
 <div class="content">
   <div id="tab-entry" class="tab-pane active">
-<div id="hallo-banner" style="display:none;font-size:16px;font-weight:700;color:var(--text);padding:0 2px;margin-bottom:10px;"></div>
+<div id="hallo-banner" style="display:none;font-size:16px;font-weight:700;color:var(--accent);padding:0 2px;margin-bottom:10px;"></div>
     <div id="draft-banner"><span>&#x1F4DD; Entwurf wiederhergestellt</span><button onclick="clearDraft()">Verwerfen</button></div>
     <div id="bestaetigungs-banner" style="display:none;background:rgba(255,69,58,0.12);border:1px solid var(--error);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:13px;color:var(--error);font-weight:600;align-items:center;gap:10px;"><span></span><button onclick="switchTabZuQualis()" style="background:none;border:1px solid var(--error);color:var(--error);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">Jetzt bestätigen</button></div>
     <div class="card"><div class="card-header">Stammdaten</div>
@@ -497,7 +497,7 @@ document.addEventListener('click', aktualisiereAktivitaet);
         renderTable(data.abwesenheit, 'status-output'); 
         renderQualisTable(data.qualis, 'qualis-output');
         if (data.mitarbeiter) {
-          document.getElementById('hallo-banner').innerText = '              Hallo ' + data.mitarbeiter + ' 👋';
+		document.getElementById('hallo-banner').innerHTML = '🚂 Hallo, ' + data.mitarbeiter+ ' 👋';
           document.getElementById('hallo-banner').style.display = 'block';
         }
       }
