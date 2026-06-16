@@ -627,8 +627,23 @@ document.addEventListener('click', aktualisiereAktivitaet);
     const letzteCol = karten[karten.length - 1].col;
     const letzteDatum = karten[karten.length - 1].datum;
     html += '<button onclick="loescheSchichtBestaetigen(' + letzteCol + ', \'' + letzteDatum + '\')" style="background:rgba(255,69,58,0.12);border:1px solid rgba(255,69,58,0.35);color:var(--error);width:100%;padding:12px;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;margin-top:4px;">Letzte Schicht löschen (' + letzteDatum + ')</button>';
+html += '<button onclick="wocheAbschliessen()" style="background:rgba(50,215,75,0.15);border:1px solid rgba(50,215,75,0.3);color:var(--success);width:100%;padding:12px;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;margin-top:8px;touch-action:manipulation;">✅ Woche abgeschlossen</button>';
     out.innerHTML = html;
   }
+function wocheAbschliessen() {
+  if (!confirm('Hiermit bestätige ich dass alle Schichten der letzten Woche vollständig eingetragen und kontrolliert sind.')) return;
+  showToast('⏳ Wird gesendet...', 'var(--text-dim)');
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'meldeWocheAbgeschlossen', token })
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (res.erfolg) showToast(res.meldung, 'var(--success)');
+    else showToast('❌ ' + res.fehler, 'var(--error)');
+  })
+  .catch(() => showToast('❌ Netzwerkfehler', 'var(--error)'));
+}
   function renderMonatsbericht(res) {
     const out = document.getElementById('monatsbericht-output');
     const s = res.summen;
