@@ -656,8 +656,9 @@ function wocheAbschliessen() {
     res.zeilen.forEach(row => { html += '<tr>' + row.map(c => '<td>' + (c || '') + '</td>').join('') + '</tr>'; });
     html += '<tr class="sum-row">' + res.spalten.map(sp => '<td>' + (sumVals[sp] || '') + '</td>').join('') + '</tr>';
     html += '</tbody></table></div>';
-    const st = res.stunden, mehrNeg = parseFloat(st.mehrarbeit.replace(',', '.')) < 0;
-    html += '<div class="mb-overview"><div class="mb-overview-row"><span class="mb-overview-label">Soll-Stunden</span><span class="mb-overview-val">' + st.soll + '</span></div><div class="mb-overview-row"><span class="mb-overview-label">Ist-Stunden</span><span class="mb-overview-val">' + st.ist + '</span></div><div class="mb-overview-row"><span class="mb-overview-label">Mehrarbeit</span><span class="mb-overview-val' + (mehrNeg ? ' neg' : '') + '">' + st.mehrarbeit + '</span></div><div class="mb-overview-row"><span class="mb-overview-label">Mehrarbeitszuschlag</span><span class="mb-overview-val">' + st.mzuschlag + '</span></div></div>';
+    
+ 	const st = res.stunden, mehrNeg = parseFloat(st.mehrarbeit.replace(',', '.')) < 0;
+html += '<div class="mb-overview"><div class="mb-overview-row"><span class="mb-overview-label">Soll-Stunden</span><span class="mb-overview-val">' + st.soll + '</span></div><div class="mb-overview-row"><span class="mb-overview-label">Ist-Stunden</span><span class="mb-overview-val">' + st.ist + '</span></div><div class="mb-overview-row"><span class="mb-overview-label">Mehrarbeit</span><span class="mb-overview-val' + (mehrNeg ? ' neg' : '') + '">' + st.mehrarbeit + '</span></div></div>';
     out.innerHTML = html;
     setTimeout(() => out.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
   }
