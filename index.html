@@ -627,7 +627,7 @@ document.addEventListener('click', aktualisiereAktivitaet);
     const letzteCol = karten[karten.length - 1].col;
     const letzteDatum = karten[karten.length - 1].datum;
     html += '<button onclick="loescheSchichtBestaetigen(' + letzteCol + ', \'' + letzteDatum + '\')" style="background:rgba(255,69,58,0.12);border:1px solid rgba(255,69,58,0.35);color:var(--error);width:100%;padding:12px;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;margin-top:4px;">Letzte Schicht löschen (' + letzteDatum + ')</button>';
-html += '<button onclick="wocheAbschliessen()" style="background:rgba(50,215,75,0.15);border:1px solid rgba(50,215,75,0.3);color:var(--success);width:100%;padding:12px;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;margin-top:8px;touch-action:manipulation;">✅ Woche abgeschlossen</button>';
+html += '<button onclick="wocheAbschliessen()" style="background:rgba(50,215,75,0.15);border:1px solid rgba(50,215,75,0.3);color:var(--success);width:100%;padding:12px;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;margin-top:8px;touch-action:manipulation;">✅ Woche zur Abrechnung freigeben</button>';
     out.innerHTML = html;
   }
 function wocheAbschliessen() {
