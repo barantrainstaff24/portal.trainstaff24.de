@@ -532,10 +532,11 @@ document.addEventListener('click', aktualisiereAktivitaet);
   function ladeOrtskundeOnce() {
     if (ortskundeGeladen) return; ortskundeGeladen = true;
     google.script.run
-      .withSuccessHandler(res => { if (res.erfolg) renderOrtskunde(res.eintraege); else document.getElementById('ortskunde-output').innerHTML = '<div class="loading-spinner">❌ ' + res.fehler + '</div>'; })
+      .withSuccessHandler(res => { if (res.erfolg) { renderOrtskunde(res.eintraege); document.getElementById('ortskunde-suche').focus(); } else document.getElementById('ortskunde-output').innerHTML = '<div class="loading-spinner">❌ ' + res.fehler + '</div>'; })
       .withFailureHandler(() => { document.getElementById('ortskunde-output').innerHTML = '<div class="loading-spinner">❌ Fehler</div>'; })
       .loadOrtskunde(token);
   }
+
   function ladeDokumenteOnce() {
     if (dokumenteGeladen) return; dokumenteGeladen = true;
     google.script.run
@@ -1007,9 +1008,10 @@ function ladeBetriebsstellenOnce() {
   document.getElementById('betriebsstellen-output').innerHTML = '<div class="loading-spinner">Wird geladen...</div>';
  fetch('https://portal.trainstaff24.de/docs/betriebsstellen.json')
     .then(r => r.json())
-   .then(daten => {
+    .then(daten => {
       betriebsstellenDaten = daten;
       document.getElementById('betriebsstellen-output').innerHTML = '<div class="ortskunde-leer">Bitte Suchbegriff eingeben.</div>';
+      document.getElementById('betriebsstellen-suche-name').focus();
     })
     .catch(() => {
       document.getElementById('betriebsstellen-output').innerHTML = '<div class="ortskunde-leer">❌ Fehler beim Laden.</div>';
