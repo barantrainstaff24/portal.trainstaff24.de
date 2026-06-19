@@ -170,6 +170,7 @@
   <div class="nav-item" onclick="switchTab(this,'tab-berichte')">Arbeitszeit</div>
   <div class="nav-item" onclick="switchTab(this,'tab-reisekosten');ladeVMADaten()">Reisekosten</div>
   <div class="nav-item" onclick="switchTab(this,'tab-ortskunde');ladeOrtskundeOnce()">Ortskunde</div>
+<div class="nav-item" onclick="switchTab(this,'tab-betriebsstellen');ladeBetriebsstellenOnce()">Betriebsstellen</div>	
   <div class="nav-item" onclick="switchTab(this,'tab-qualis');ladeDokumenteOnce();ladeBestaetigungenOnce()">Infos &amp; Docs</div>
   <div class="nav-item" onclick="switchTab(this,'tab-status')">Abwesenheit</div>
 </div>
@@ -265,13 +266,21 @@
       <div id="vma-senden-status" style="margin-top:8px;font-size:13px;text-align:center;min-height:16px;"></div>
     </div>
   </div>
-  <div id="tab-ortskunde" class="tab-pane">
+
+   <div id="tab-ortskunde" class="tab-pane">
     <div class="ortskunde-suche-wrapper">
       <input type="text" id="ortskunde-suche" placeholder="&#x1F50D; Suche nach Ort oder Begriff..." oninput="filterOrtskunde(this.value)">
     </div>
     <div id="ortskunde-output"><div class="loading-spinner">Wird geladen...</div></div>
   </div>
+  <div id="tab-betriebsstellen" class="tab-pane">
+    <div class="ortskunde-suche-wrapper">
+      <input type="text" id="betriebsstellen-suche" placeholder="🔍 Kürzel oder Bahnhofsname..." oninput="filterBetriebsstellen(this.value)">
+    </div>
+    <div id="betriebsstellen-output"><div class="loading-spinner">Noch nicht geladen.</div></div>
+  </div>
 </div>
+
 </div>
 <!-- Modals -->
 <div id="modal-confirm" class="modal"><div class="modal-content">
@@ -986,6 +995,48 @@ html += '<div class="mb-overview"><div class="mb-overview-row"><span class="mb-o
   function openModal(id){document.getElementById(id).classList.add('show');}
   function closeModal(id){document.getElementById(id).classList.remove('show');}
   function switchTabZuQualis(){const n=document.querySelector('.nav-item[onclick*="tab-qualis"]');if(n)n.click();}
+  let betriebsstellenDaten = [];
+let betriebsstellenGeladen = false;
+
+function ladeBetriebsstellenOnce() {
+  if (betriebsstellenGeladen) return;
+  betriebsstellenGeladen = true;
+  document.getElementById('betriebsstellen-output').innerHTML = '<div class="loading-spinner">Wird geladen...</div>';
+  fetch('https://barantrainstaff24.github.io/portal.trainstaff24.de/docs/betriebsstellen.json')
+    .then(r => r.json())
+    .then(daten => {
+      betriebsstellenDaten = daten;
+      renderBetriebsstellen(daten, '');
+    })
+    .catch(() => {
+      document.getElementById('betriebsstellen-output').innerHTML = '<div class="ortskunde-leer">❌ Fehler beim Laden.</div>';
+    });
+}
+
+function renderBetriebsstellen(daten, q) {
+  const out = document.getElementById('betriebsstellen-output');
+  if (!daten || daten.length === 0) { out.innerHTML = '<div class="ortskunde-leer">Keine Einträge.</div>'; return; }
+  const lower = q.toLowerCase().trim();
+  const gefiltert = lower ? daten.filter(e => e.k.toLowerCase().includes(lower) || e.n.toLowerCase().includes(lower)) : daten;
+  if (gefiltert.length === 0) { out.innerHTML = '<div class="ortskunde-leer">Keine Treffer für "' + q + '".</div>'; return; }
+  const esc = lower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const rx = lower ? new RegExp('(' + esc + ')', 'gi') : null;
+  const markiere = str => rx ? str.replace(rx, '<mark class="treffer">$1</mark>') : str;
+  const MAX = lower ? gefiltert.length : 100;
+  const anzeige = gefiltert.slice(0, MAX);
+  out.innerHTML = '<div style="font-size:11px;color:var(--text-dim);padding:4px 2px;margin-bottom:8px;">' + gefiltert.length + ' Treffer' + (gefiltert.length > MAX ? ' (erste ' + MAX + ' angezeigt)' : '') + '</div>' +
+    anzeige.map(e =>
+      '<div style="background:var(--card);border-radius:10px;margin-bottom:6px;border:1px solid var(--border);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">' +
+      '<span style="font-size:13px;color:var(--text);">' + markiere(e.n) + '</span>' +
+      '<span style="font-size:12px;font-weight:800;color:var(--accent);margin-left:10px;white-space:nowrap;">' + markiere(e.k) + '</span>' +
+      '</div>'
+    ).join('');
+}
+
+function filterBetriebsstellen(q) {
+  if (!betriebsstellenGeladen || betriebsstellenDaten.length === 0) return;
+  renderBetriebsstellen(betriebsstellenDaten, q);
+}
 </script>
 </body>
 </html>
