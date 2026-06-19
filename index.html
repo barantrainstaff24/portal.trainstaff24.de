@@ -1002,7 +1002,7 @@ function ladeBetriebsstellenOnce() {
   if (betriebsstellenGeladen) return;
   betriebsstellenGeladen = true;
   document.getElementById('betriebsstellen-output').innerHTML = '<div class="loading-spinner">Wird geladen...</div>';
-  fetch('https://barantrainstaff24.github.io/portal.trainstaff24.de/docs/betriebsstellen.json')
+ fetch('https://portal.trainstaff24.de/docs/betriebsstellen.json')
     .then(r => r.json())
     .then(daten => {
       betriebsstellenDaten = daten;
