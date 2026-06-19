@@ -274,10 +274,10 @@
     <div id="ortskunde-output"><div class="loading-spinner">Wird geladen...</div></div>
   </div>
 
-  <div id="tab-betriebsstellen" class="tab-pane">
-    <div class="ortskunde-suche-wrapper" style="display:flex;gap:8px;">
-      <input type="text" id="betriebsstellen-suche-name" placeholder="🔍 Bahnhofsname..." oninput="filterBetriebsstellen()" style="flex:1;width:auto;">
-      <input type="text" id="betriebsstellen-suche-kuerzel" placeholder="🔍 RIL100..." oninput="filterBetriebsstellen()" style="flex:1;width:auto;">
+   <div id="tab-betriebsstellen" class="tab-pane">
+    <div style="background:var(--card);border-radius:12px;margin-bottom:10px;border:1px solid var(--border);padding:10px 14px;display:flex;gap:8px;">
+      <input type="text" id="betriebsstellen-suche-name" placeholder="🔍 Bahnhofsname..." oninput="filterBetriebsstellen()" style="flex:1;width:0;min-width:0;text-align:left;font-size:13px;">
+      <input type="text" id="betriebsstellen-suche-kuerzel" placeholder="🔍 RIL100..." oninput="filterBetriebsstellen()" style="flex:1;width:0;min-width:0;text-align:left;font-size:13px;">
     </div>
     <div id="betriebsstellen-output"><div class="ortskunde-leer">Bitte Suchbegriff eingeben.</div></div>
   </div>
@@ -1007,9 +1007,9 @@ function ladeBetriebsstellenOnce() {
   document.getElementById('betriebsstellen-output').innerHTML = '<div class="loading-spinner">Wird geladen...</div>';
  fetch('https://portal.trainstaff24.de/docs/betriebsstellen.json')
     .then(r => r.json())
-    .then(daten => {
+   .then(daten => {
       betriebsstellenDaten = daten;
-      renderBetriebsstellen(daten, '');
+      document.getElementById('betriebsstellen-output').innerHTML = '<div class="ortskunde-leer">Bitte Suchbegriff eingeben.</div>';
     })
     .catch(() => {
       document.getElementById('betriebsstellen-output').innerHTML = '<div class="ortskunde-leer">❌ Fehler beim Laden.</div>';
