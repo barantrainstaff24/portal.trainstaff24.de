@@ -273,12 +273,15 @@
     </div>
     <div id="ortskunde-output"><div class="loading-spinner">Wird geladen...</div></div>
   </div>
+
   <div id="tab-betriebsstellen" class="tab-pane">
-    <div class="ortskunde-suche-wrapper">
-      <input type="text" id="betriebsstellen-suche" placeholder="🔍 Kürzel oder Bahnhofsname..." oninput="filterBetriebsstellen(this.value)">
+    <div class="ortskunde-suche-wrapper" style="display:flex;gap:8px;">
+      <input type="text" id="betriebsstellen-suche-name" placeholder="🔍 Bahnhofsname..." oninput="filterBetriebsstellen()" style="flex:1;width:auto;">
+      <input type="text" id="betriebsstellen-suche-kuerzel" placeholder="🔍 RIL100..." oninput="filterBetriebsstellen()" style="flex:1;width:auto;">
     </div>
-    <div id="betriebsstellen-output"><div class="loading-spinner">Noch nicht geladen.</div></div>
+    <div id="betriebsstellen-output"><div class="ortskunde-leer">Bitte Suchbegriff eingeben.</div></div>
   </div>
+
 </div>
 
 </div>
@@ -1013,29 +1016,36 @@ function ladeBetriebsstellenOnce() {
     });
 }
 
-function renderBetriebsstellen(daten, q) {
+ function renderBetriebsstellen(daten, qName, qKuerzel) {
   const out = document.getElementById('betriebsstellen-output');
   if (!daten || daten.length === 0) { out.innerHTML = '<div class="ortskunde-leer">Keine Einträge.</div>'; return; }
-  const lower = q.toLowerCase().trim();
-  const gefiltert = lower ? daten.filter(e => e.k.toLowerCase().includes(lower) || e.n.toLowerCase().includes(lower)) : daten;
-  if (gefiltert.length === 0) { out.innerHTML = '<div class="ortskunde-leer">Keine Treffer für "' + q + '".</div>'; return; }
-  const esc = lower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const rx = lower ? new RegExp('(' + esc + ')', 'gi') : null;
-  const markiere = str => rx ? str.replace(rx, '<mark class="treffer">$1</mark>') : str;
-  const MAX = lower ? gefiltert.length : 100;
-  const anzeige = gefiltert.slice(0, MAX);
-  out.innerHTML = '<div style="font-size:11px;color:var(--text-dim);padding:4px 2px;margin-bottom:8px;">' + gefiltert.length + ' Treffer' + (gefiltert.length > MAX ? ' (erste ' + MAX + ' angezeigt)' : '') + '</div>' +
-    anzeige.map(e =>
+  const lName = qName.toLowerCase().trim();
+  const lKuerzel = qKuerzel.toLowerCase().trim();
+  if (!lName && !lKuerzel) { out.innerHTML = '<div class="ortskunde-leer">Bitte Suchbegriff eingeben.</div>'; return; }
+  const gefiltert = daten.filter(e =>
+    (!lName || e.n.toLowerCase().includes(lName)) &&
+    (!lKuerzel || e.k.toLowerCase().includes(lKuerzel))
+  );
+  if (gefiltert.length === 0) { out.innerHTML = '<div class="ortskunde-leer">Keine Treffer.</div>'; return; }
+  const markiere = (str, q) => {
+    if (!q) return str;
+    const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return str.replace(new RegExp('(' + esc + ')', 'gi'), '<mark class="treffer">$1</mark>');
+  };
+  out.innerHTML = '<div style="font-size:11px;color:var(--text-dim);padding:4px 2px;margin-bottom:8px;">' + gefiltert.length + ' Treffer</div>' +
+    gefiltert.map(e =>
       '<div style="background:var(--card);border-radius:10px;margin-bottom:6px;border:1px solid var(--border);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">' +
-      '<span style="font-size:13px;color:var(--text);">' + markiere(e.n) + '</span>' +
-      '<span style="font-size:12px;font-weight:800;color:var(--accent);margin-left:10px;white-space:nowrap;">' + markiere(e.k) + '</span>' +
+      '<span style="font-size:13px;color:var(--text);">' + markiere(e.n, lName) + '</span>' +
+      '<span style="font-size:12px;font-weight:800;color:var(--accent);margin-left:10px;white-space:nowrap;">' + markiere(e.k, lKuerzel) + '</span>' +
       '</div>'
     ).join('');
 }
 
-function filterBetriebsstellen(q) {
+function filterBetriebsstellen() {
   if (!betriebsstellenGeladen || betriebsstellenDaten.length === 0) return;
-  renderBetriebsstellen(betriebsstellenDaten, q);
+  const qName = document.getElementById('betriebsstellen-suche-name').value;
+  const qKuerzel = document.getElementById('betriebsstellen-suche-kuerzel').value;
+  renderBetriebsstellen(betriebsstellenDaten, qName, qKuerzel);
 }
 </script>
 </body>
